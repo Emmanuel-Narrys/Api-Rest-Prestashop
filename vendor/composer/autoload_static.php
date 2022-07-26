@@ -16,7 +16,7 @@ class ComposerStaticInit55cc0d1f2b6a14892ffcbe5dab4be6fd
     public static $prefixDirsPsr4 = array (
         'ApiRest\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/',
+            0 => __DIR__ . '/../..' . '/src',
         ),
     );
 

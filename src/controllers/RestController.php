@@ -11,7 +11,7 @@ class RestController extends ModuleFrontController{
 
         header("Content-type: application/json");
         parent::init();
-        var_dump($_SERVER);die;
+        $this->processGetRequest();
     }
 
     protected function processGetRequest (){
