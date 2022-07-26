@@ -1,0 +1,17 @@
+{
+    "name": "vendor/api_rest",
+    "description": "Module api rest prestashop 1.7",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Emmanuel-Narrys",
+            "email": "emmanuelnarrys@gmail.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "ApiRest\\" : ""
+        }
+    }
+}
