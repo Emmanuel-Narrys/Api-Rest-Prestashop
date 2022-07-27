@@ -1,10 +1,10 @@
 <?php
 
-namespace ApiRest\Classes;
+namespace NarrysTech\Api_Rest\classes;
 
 class Helpers{
 
-    public static function response_json (bool $success = true, int $status = 200, array $datas = []):string
+    public static function response_json (array $datas = [], int $status = 200, bool $success = true):string
     {
         return json_encode([
             "success" => $success,

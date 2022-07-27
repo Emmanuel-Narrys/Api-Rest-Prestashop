@@ -1,6 +1,6 @@
 <?php
 
-namespace ApiRest\Classes;
+namespace NarrysTech\Api_Rest\classes;
 
 class APIRoutes {
 

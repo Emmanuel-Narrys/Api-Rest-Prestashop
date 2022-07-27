@@ -24,10 +24,15 @@
 *  International Registered Trademark & Property of PrestaShop SA
 */
 
-use ApiRest\Classes\APIRoutes;
+use NarrysTech\Api_Rest\classes\APIRoutes;
 
 if (!defined('_PS_VERSION_')) {
     exit;
+}
+
+
+if (file_exists(_PS_MODULE_DIR_ . 'api_rest/vendor/autoload.php')) {
+    require_once _PS_MODULE_DIR_ .  'api_rest/vendor/autoload.php';
 }
 
 class Api_rest extends Module
