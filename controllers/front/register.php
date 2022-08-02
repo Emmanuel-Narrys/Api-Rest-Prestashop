@@ -14,7 +14,7 @@ class Api_RestRegisterModuleFrontController extends RestController
      * @var array
      */
     public $params = [
-        "table" => 'customer',
+        "table" => 'register',
         "fields" => [
             [
                 "name" => "username",
@@ -30,6 +30,42 @@ class Api_RestRegisterModuleFrontController extends RestController
                 "name" => "password",
                 "required" => true,
                 "type" => "password"
+            ],
+            [
+                "name" => "ig_gender",
+                "required" => false,
+                "type" => "number",
+                "default" => 1
+            ],
+            [
+                "name" => "newsletter",
+                "required" => false,
+                "type" => "number",
+                "default" => 0
+            ],
+            [
+                "name" => "optin",
+                "required" => false,
+                "type" => "number",
+                "default" => 0
+            ],
+            [
+                "name" => "firstname",
+                "required" => false,
+                "type" => "text",
+                "default" => ""
+            ],
+            [
+                "name" => "lastname",
+                "required" => false,
+                "type" => "text",
+                "default" => ""
+            ],
+            [
+                "name" => "customer_privacy",
+                "required" => false,
+                "type" => "number",
+                "default" => 1
             ],
         ]
     ];
@@ -62,7 +98,43 @@ class Api_RestRegisterModuleFrontController extends RestController
 
         $inputs = $this->checkErrorsRequiredOrType();
 
-        $this->datas = $inputs;
+        try {
+
+            $inputs["sponsorship_code"] = Helpers::generateSponsorshipCode();
+
+            $register_form = $this
+                ->makeCustomerForm()
+                ->setGuestAllowed(false)
+                ->fillWith($inputs);
+
+            $hookResult = array_reduce(
+                Hook::exec('actionSubmitAccountBefore', [], null, true),
+                function ($carry, $item) {
+                    return $carry && $item;
+                },
+                true
+            );
+
+            if ($hookResult && $register_form->submit()) {
+                $customer = $this->context->customer;
+                if ($customer->isLogged()) {
+
+                    $this->datas["registered"] = $customer->isLogged();
+                    $this->datas["message"] = $this->getTranslator()->trans('User registered successfully');
+                    $this->datas["is_logged"] = $customer->isLogged();
+                    $this->datas["session_token"] = $this->context->cookie->getAll()["session_token"];
+                    $this->datas["customer"] = $customer;
+                    $this->datas["id_cart"] = $this->context->cart->id;
+                }
+            } else {
+                $this->renderAjaxErrors(
+                    $this->getTranslator()->trans("This username or email exists.")
+                );
+            }
+        } catch (\Exception $e) {
+            $this->renderAjaxErrors($e->getMessage());
+        }
+
         $this->renderAjax();
     }
 }

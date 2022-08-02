@@ -25,6 +25,7 @@
 */
 
 use NarrysTech\Api_Rest\classes\APIRoutes;
+use NarrysTech\Api_Rest\Repository;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -38,6 +39,13 @@ if (file_exists(_PS_MODULE_DIR_ . 'api_rest/vendor/autoload.php')) {
 class Api_rest extends Module
 {
     protected $config_form = false;
+
+    /**
+     * Undocumented variable
+     *
+     * @var NarrysTech\Api_Rest\Repository
+     */
+    public $repository = null;
 
     public function __construct()
     {
@@ -58,6 +66,8 @@ class Api_rest extends Module
         $this->description = $this->l('Ce module vous permet d\'ajouter une api rest a votre projet Prestashop');
 
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
+
+        $this->repository = new Repository($this);
     }
 
     /**
@@ -69,9 +79,7 @@ class Api_rest extends Module
         Configuration::updateValue('API_REST_LIVE_MODE', false);
 
         return parent::install() &&
-            $this->registerHook('header') &&
-            $this->registerHook('backOfficeHeader') &&
-            $this->registerHook('moduleRoutes');
+        $this->repository->install();
     }
 
     public function uninstall()
@@ -79,7 +87,7 @@ class Api_rest extends Module
         Configuration::deleteByName('API_REST_LIVE_MODE');
 
         return parent::uninstall() && 
-        $this->unregisterHook('moduleRoutes');
+        $this->repository->uninstall();
     }
 
     /**

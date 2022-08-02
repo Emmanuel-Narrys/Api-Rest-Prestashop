@@ -2,9 +2,10 @@
 
 namespace NarrysTech\Api_Rest\classes;
 
-class APIRoutes {
+class APIRoutes
+{
 
-    public static final function getRoutes():array
+    public static final function getRoutes(): array
     {
         return [
             'module-api_rest-register' => [
@@ -15,7 +16,16 @@ class APIRoutes {
                     'fc' => 'module',
                     'module' => 'api_rest'
                 ]
-            ]
+            ],
+            'module-api_rest-login' => [
+                'rule' => 'rest/login',
+                'keywords' => [],
+                'controller' => 'login',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
         ];
     }
 }
