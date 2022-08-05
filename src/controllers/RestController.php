@@ -59,6 +59,12 @@ class RestController extends ModuleFrontController
      * @var integer
      */
     public $codeAuthenticate = 401;
+    /**
+     * Error Authenticate Customer
+     *
+     * @var integer
+     */
+    public $codeAuthenticateCustomer = 402;
 
     public function init()
     {
@@ -219,11 +225,11 @@ class RestController extends ModuleFrontController
         die;
     }
 
-    public function renderAjaxErrors($message)
+    public function renderAjaxErrors($message, int $status = null)
     {
         $this->datas = [];
         $this->datas["errors"]["message"] = $message;
-        $this->renderAjax($this->codeErrors, false);
+        $this->renderAjax($status === null ? $this->codeErrors : $status, false);
     }
 
     public function authenticate()

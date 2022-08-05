@@ -96,9 +96,10 @@ class Api_RestRegisterModuleFrontController extends RestController
     protected function processPostRequest()
     {
 
-        $inputs = $this->checkErrorsRequiredOrType();
 
         try {
+
+            $inputs = $this->checkErrorsRequiredOrType();
 
             $inputs["sponsorship_code"] = Helpers::generateSponsorshipCode();
 
@@ -131,10 +132,10 @@ class Api_RestRegisterModuleFrontController extends RestController
                     $this->getTranslator()->trans("This username or email exists.")
                 );
             }
+
+            $this->renderAjax();
         } catch (\Exception $e) {
             $this->renderAjaxErrors($e->getMessage());
         }
-
-        $this->renderAjax();
     }
 }

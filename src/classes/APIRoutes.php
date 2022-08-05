@@ -26,6 +26,15 @@ class APIRoutes
                     'module' => 'api_rest'
                 ]
             ],
+            'module-api_rest-store' => [
+                'rule' => 'rest/store',
+                'keywords' => [],
+                'controller' => 'store',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
         ];
     }
 }

@@ -61,9 +61,9 @@ class Api_RestLoginModuleFrontController extends RestController
     protected function processPostRequest()
     {
 
-        $inputs = $this->checkErrorsRequiredOrType();
-
         try {
+
+            $inputs = $this->checkErrorsRequiredOrType();
 
             if (!Validate::isEmail($inputs["email"])) {
                 $email = Helpers::getEmailByUsername($inputs["email"]);
@@ -85,15 +85,22 @@ class Api_RestLoginModuleFrontController extends RestController
                 if ($customer->isLogged()) {
                     $this->datas["is_logged"] = $customer->isLogged();
                     $this->datas["session_token"] = $this->context->cookie->getAll()["session_token"];
-                    $this->datas["customer"] = $customer;
+                    $this->datas["customer"] = [
+                        "id" => $customer->id,
+                        "id_gender" => $customer->id_gender,
+                        "id_lang" => $customer->id_lang,
+                        "username" => $customer->username,
+                        "email" => $customer->email,
+                        "sponsorship_code" => $customer->sponsorship_code
+                    ];
                     $this->datas["id_cart"] = $this->context->cart->id;
                 }
             }
 
+            $this->renderAjax();
+
         } catch (\Exception $e) {
             $this->renderAjaxErrors($e->getMessage());
         }
-
-        $this->renderAjax();
     }
 }
