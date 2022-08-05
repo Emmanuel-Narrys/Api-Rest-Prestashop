@@ -2,6 +2,8 @@
 
 use NarrysTech\Api_Rest\classes\Helpers;
 use NarrysTech\Api_Rest\controllers\RestController;
+use PrestaShop\PrestaShop\Adapter\Entity\Db;
+use PrestaShop\PrestaShop\Adapter\Entity\DbQuery;
 use PrestaShop\PrestaShop\Adapter\Entity\Tools;
 use PrestaShop\PrestaShop\Adapter\Entity\Validate;
 
@@ -36,6 +38,12 @@ class Api_RestRegisterModuleFrontController extends RestController
                 "required" => false,
                 "type" => "number",
                 "default" => 1
+            ],
+            [
+                "name" => "sponsorship_code",
+                "required" => false,
+                "type" => "text",
+                "default" => null
             ],
             [
                 "name" => "newsletter",
@@ -101,6 +109,13 @@ class Api_RestRegisterModuleFrontController extends RestController
 
             $inputs = $this->checkErrorsRequiredOrType();
 
+            if($inputs["sponsorship_code"] != null){
+                $id_sponsorship = self::getIdCustomerWithSponsorshipCode($inputs["sponsorship_code"]);
+                if($id_sponsorship){
+                    $inputs["id_sponsorship"] = $id_sponsorship;
+                }
+            }
+
             $inputs["sponsorship_code"] = Helpers::generateSponsorshipCode();
 
             $register_form = $this
@@ -124,7 +139,14 @@ class Api_RestRegisterModuleFrontController extends RestController
                     $this->datas["message"] = $this->getTranslator()->trans('User registered successfully');
                     $this->datas["is_logged"] = $customer->isLogged();
                     $this->datas["session_token"] = $this->context->cookie->getAll()["session_token"];
-                    $this->datas["customer"] = $customer;
+                    $this->datas["customer"] = [
+                        "id" => $customer->id,
+                        "id_gender" => $customer->id_gender,
+                        "id_lang" => $customer->id_lang,
+                        "username" => $customer->username,
+                        "email" => $customer->email,
+                        "sponsorship_code" => $customer->sponsorship_code
+                    ];
                     $this->datas["id_cart"] = $this->context->cart->id;
                 }
             } else {
@@ -136,6 +158,24 @@ class Api_RestRegisterModuleFrontController extends RestController
             $this->renderAjax();
         } catch (\Exception $e) {
             $this->renderAjaxErrors($e->getMessage());
+        }
+    }
+
+    /**
+     * @return int|false
+     */
+    public static function getIdCustomerWithSponsorshipCode(string $sponsorship_code)
+    {
+        $q = new DbQuery();
+        $q->select("a.*")
+        ->from("customer", "a")
+        ->where("a.sponsorship_code = '$sponsorship_code'");
+
+        $customer = Db::getInstance()->executeS($q, false)->fetch(PDO::FETCH_OBJ);
+        if(empty($customer) || is_null($customer)){
+            return false;
+        }else {
+            return $customer->id_customer;
         }
     }
 }

@@ -37,6 +37,7 @@ class Repository
             `id_gender` int(10) unsigned DEFAULT '1',
             `id_default_group` int(10) unsigned NOT NULL DEFAULT '1',
             `id_lang` int(10) unsigned DEFAULT NULL,
+            `id_sponsorship` int(10) unsigned DEFAULT NULL,
             `id_risk` int(10) unsigned NOT NULL DEFAULT '1',
             `company` varchar(255) DEFAULT NULL,
             `siret` varchar(14) DEFAULT NULL,
