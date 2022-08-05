@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+    <name>api_rest</name>
+    <displayName><![CDATA[Api Rest]]></displayName>
+    <version><![CDATA[1.0.0]]></version>
+    <description><![CDATA[Ce module vous permet d&#039;ajouter une api rest a votre projet Prestashop]]></description>
+    <author><![CDATA[Emmanuel Narrys]]></author>
+    <tab><![CDATA[others]]></tab>
+    <is_configurable>1</is_configurable>
+    <need_instance>0</need_instance>
+	<limited_countries></limited_countries>
+</module>
