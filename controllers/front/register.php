@@ -109,6 +109,13 @@ class Api_RestRegisterModuleFrontController extends RestController
 
             $inputs = $this->checkErrorsRequiredOrType();
 
+            $customers = Customer::getCustomersByEmail($inputs["email"]);
+            if(!empty($customers)){
+                $this->renderAjaxErrors(
+                    $this->getTranslator()->trans("This username or email exists.")
+                );
+            }
+
             if($inputs["sponsorship_code"] != null){
                 $id_sponsorship = self::getIdCustomerWithSponsorshipCode($inputs["sponsorship_code"]);
                 if($id_sponsorship){
