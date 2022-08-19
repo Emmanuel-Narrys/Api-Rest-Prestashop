@@ -2,7 +2,6 @@
 
 use NarrysTech\Api_Rest\classes\Helpers;
 use NarrysTech\Api_Rest\controllers\RestController;
-use PrestaShop\PrestaShop\Adapter\Entity\Customer;
 use PrestaShop\PrestaShop\Adapter\Entity\Db;
 use PrestaShop\PrestaShop\Adapter\Entity\DbQuery;
 use PrestaShop\PrestaShop\Adapter\Entity\Tools;
@@ -109,13 +108,6 @@ class Api_RestRegisterModuleFrontController extends RestController
         try {
 
             $inputs = $this->checkErrorsRequiredOrType();
-
-            $customers = Customer::getCustomersByEmail($inputs["email"]);
-            if(!empty($customers)){
-                $this->renderAjaxErrors(
-                    $this->getTranslator()->trans("This username or email exists.")
-                );
-            }
 
             if($inputs["sponsorship_code"] != null){
                 $id_sponsorship = self::getIdCustomerWithSponsorshipCode($inputs["sponsorship_code"]);
