@@ -27,8 +27,10 @@ class APIRoutes
                 ]
             ],
             'module-api_rest-store' => [
-                'rule' => 'rest/store',
-                'keywords' => [],
+                'rule' => 'rest/stores{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[_a-zA-Z0-9_-]+', 'param' => 'id']
+                ],
                 'controller' => 'store',
                 'params' => [
                     'fc' => 'module',

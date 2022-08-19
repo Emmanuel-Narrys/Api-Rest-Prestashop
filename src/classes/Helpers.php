@@ -7,7 +7,7 @@ use PrestaShop\PrestaShop\Adapter\Entity\Db;
 class Helpers
 {
 
-    public static function response_json(array $datas = [], int $status = 200, bool $success = true): string
+    public static function response_json($datas = [], int $status = 200, bool $success = true): string
     {
         return json_encode([
             "success" => $success,
