@@ -37,6 +37,24 @@ class APIRoutes
                     'module' => 'api_rest'
                 ]
             ],
+            'module-api_rest-bootstrap' => [
+                'rule' => 'rest/bootstrap',
+                'keywords' => [],
+                'controller' => 'bootstrap',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-languages' => [
+                'rule' => 'rest/languages',
+                'keywords' => [],
+                'controller' => 'language',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
         ];
     }
 }
