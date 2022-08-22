@@ -2,7 +2,7 @@
 
 use NarrysTech\Api_Rest\controllers\RestController;
 use PrestaShop\PrestaShop\Adapter\Entity\Tools;
-use Viaziza\Smalldeals\Classes\Store;
+use Viaziza\Smalldeals\Classes\Boutique;
 
 class Api_RestStoreModuleFrontController extends RestController
 {
@@ -53,7 +53,7 @@ class Api_RestStoreModuleFrontController extends RestController
         if ($id_store) {
             if ((int) $id_store) {
                 $id_store = (int) $id_store;
-                $store = Store::getStore($id_store, $id_lang ?? null);
+                $store = Boutique::getStore($id_store, $id_lang ?? null);
                 if ($store) {
                     $this->datas['store'] = $store;
                     $this->renderAjax();
@@ -61,7 +61,7 @@ class Api_RestStoreModuleFrontController extends RestController
                     $this->renderAjaxErrors($this->trans("Shop with id {$id_store} not exists."));
                 }
             } else {
-                $store = Store::getStoreWithSlug($id_store, $id_lang ?? null);
+                $store = Boutique::getStoreWithSlug($id_store, $id_lang ?? null);
                 if ($store) {
                     $this->datas['store'] = $store;
                     $this->renderAjax();
@@ -71,7 +71,7 @@ class Api_RestStoreModuleFrontController extends RestController
             }
         }
 
-        $this->datas['stores'] = Store::getFullStores($id_lang?? null);
+        $this->datas['stores'] = Boutique::getFullStores($id_lang?? null);
         $this->renderAjax();
 
         parent::processGetRequest();
