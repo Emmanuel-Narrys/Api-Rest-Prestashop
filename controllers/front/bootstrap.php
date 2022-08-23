@@ -12,10 +12,23 @@ class Api_RestBootstrapModuleFrontController extends RestController
 
     protected function processGetRequest()
     {
+        if(!Module::isEnabled('ps_imageslider')){
+            $this->renderAjaxErrors($this->trans("Module 'ps_imageslider' is not install."), $this->codeServeur);
+        }
+        if(!Module::isEnabled('ps_contactinfo')){
+            $this->renderAjaxErrors($this->trans("Module 'ps_contactinfo' is not install."), $this->codeServeur);
+        }
+        if(!Module::isEnabled('ps_featuredproducts')){
+            $this->renderAjaxErrors($this->trans("Module 'ps_featuredproducts' is not install."), $this->codeServeur);
+        }
+
         $ps_imageslider = Module::getInstanceByName('ps_imageslider');
         $this->datas = array_merge($this->datas, $ps_imageslider->getWidgetVariables(null, []));
 
         $this->datas['categories'] = self::getAllCategoriesParent();
+
+        $ps_featuredproducts = Module::getInstanceByName('ps_featuredproducts');
+        $this->datas['featured_products'] = $ps_featuredproducts->getWidgetVariables(null, [])['products'];
 
         $this->datas['number_of_ads'] = self::getNbProduct();
         $this->datas['number_of_customers'] = self::getNbCustomer();
