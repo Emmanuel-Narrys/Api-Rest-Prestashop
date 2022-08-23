@@ -7,6 +7,7 @@ use PrestaShop\PrestaShop\Adapter\Entity\ModuleFrontController;
 use PrestaShop\PrestaShop\Adapter\Entity\Tools;
 use PrestaShop\PrestaShop\Adapter\Entity\Validate;
 use PrestaShop\PrestaShop\Adapter\Entity\WebserviceKey;
+use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 
 class RestController extends ModuleFrontController
 {
@@ -250,5 +251,11 @@ class RestController extends ModuleFrontController
             $this->datas["errors"]["message"] = $this->getTranslator()->trans("Authentication bearer token is empty");
             $this->renderAjax($this->codeAuthenticate, false);
         }
+    }
+
+    public function getImage ($object, $id_image)
+    {
+        $retriever = new ImageRetriever($this->context->link);
+        return $retriever->getImage($object, $id_image);
     }
 }

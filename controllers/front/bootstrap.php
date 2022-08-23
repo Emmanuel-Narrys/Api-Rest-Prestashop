@@ -6,6 +6,7 @@ use PrestaShop\PrestaShop\Adapter\Entity\Context;
 use PrestaShop\PrestaShop\Adapter\Entity\Customer;
 use PrestaShop\PrestaShop\Adapter\Entity\Module;
 use PrestaShop\PrestaShop\Adapter\Entity\Product;
+use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 
 class Api_RestBootstrapModuleFrontController extends RestController
 {
@@ -25,7 +26,7 @@ class Api_RestBootstrapModuleFrontController extends RestController
         $ps_imageslider = Module::getInstanceByName('ps_imageslider');
         $this->datas = array_merge($this->datas, $ps_imageslider->getWidgetVariables(null, []));
 
-        $this->datas['categories'] = self::getAllCategoriesParent();
+        $this->datas['categories'] = $this->getAllCategoriesParent();
 
         $ps_featuredproducts = Module::getInstanceByName('ps_featuredproducts');
         $this->datas['featured_products'] = $ps_featuredproducts->getWidgetVariables(null, [])['products'];
@@ -42,7 +43,7 @@ class Api_RestBootstrapModuleFrontController extends RestController
         parent::processGetRequest();
     }
 
-    private static function getAllCategoriesParent(): array
+    private function getAllCategoriesParent(): array
     {
         $results = Category::getHomeCategories(Context::getContext()->language->id, true);
 
@@ -53,8 +54,7 @@ class Api_RestBootstrapModuleFrontController extends RestController
                 'meta_title' => $cat->meta_title,
                 'meta_description' => $cat->meta_description,
                 'number_of_ads' => self::getNbProductsToCategory($cat->id),
-                'image' => Context::getContext()->link->getCatImageLink($cat->name, $cat->id, 'category_default'),
-                'thumb' => Context::getContext()->link->getCatImageLink($cat->name, $cat->id, '0_thumb')
+                'images' => $this->getImage($cat, $cat->id_image)
             ]);
         }, $results);
     }
