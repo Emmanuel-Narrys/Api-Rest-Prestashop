@@ -2,6 +2,7 @@
 
 use NarrysTech\Api_Rest\controllers\RestController;
 use PrestaShop\PrestaShop\Adapter\Entity\Tools;
+use PrestaShop\PrestaShop\Adapter\Entity\Validate;
 use Viaziza\Smalldeals\Classes\Boutique;
 
 class Api_RestStoreModuleFrontController extends RestController
@@ -15,11 +16,13 @@ class Api_RestStoreModuleFrontController extends RestController
     public $params = [
         "table" => 'stores',
         "fields" => [
-            /* [
-                "name" => "email",
-                "required" => true,
-                "type" => "text"
+            [
+                "name" => "id",
+                "required" => false,
+                "type" => "text",
+                'default' => false
             ],
+            /* 
             [
                 "name" => "password",
                 "required" => true,
@@ -42,7 +45,9 @@ class Api_RestStoreModuleFrontController extends RestController
     {
 
         $schema = Tools::getValue('schema');
-        $id_store = Tools::getValue('id');
+        $inputs = $this->checkErrorsRequiredOrType();
+        $id_store = $inputs['id'];
+
         $id_lang = $this->context->language->id;
 
         if ($schema && !is_null($schema)) {
@@ -54,19 +59,21 @@ class Api_RestStoreModuleFrontController extends RestController
             if ((int) $id_store) {
                 $id_store = (int) $id_store;
                 $store = Boutique::getStore($id_store, $id_lang ?? null);
-                if ($store) {
+                if (Validate::isLoadedObject($store)) {
                     $this->datas['store'] = $store;
                     $this->renderAjax();
                 } else {
-                    $this->renderAjaxErrors($this->trans("Shop with id {$id_store} not exists."));
+                    $this->renderAjaxErrors($this->trans($this->trans('This shop is no longer available.', [], 'Shop.Notifications.Error')));
                 }
             } else {
-                $store = Boutique::getStoreWithSlug($id_store, $id_lang ?? null);
-                if ($store) {
+                $store_explode = explode('-', $id_store);
+                $id_store = (int) $store_explode[0];
+                $store = Boutique::getStore($id_store, $id_lang ?? null);
+                if (Validate::isLoadedObject($store)) {
                     $this->datas['store'] = $store;
                     $this->renderAjax();
                 } else {
-                    $this->renderAjaxErrors($this->trans("Shop with slug {$id_store} not exists."));
+                    $this->renderAjaxErrors($this->trans($this->trans('This shop is no longer available.', [], 'Shop.Notifications.Error')));
                 }
             }
         }

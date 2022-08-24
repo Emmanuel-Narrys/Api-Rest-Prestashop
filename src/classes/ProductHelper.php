@@ -1,16 +1,27 @@
 <?php
+namespace NarrysTech\Api_Rest\classes;
 
+use PrestaShop\PrestaShop\Adapter\Entity\Address;
 use PrestaShop\PrestaShop\Adapter\Entity\Category;
+use PrestaShop\PrestaShop\Adapter\Entity\Combination;
 use PrestaShop\PrestaShop\Adapter\Entity\Configuration;
 use PrestaShop\PrestaShop\Adapter\Entity\Context;
 use PrestaShop\PrestaShop\Adapter\Entity\Currency;
+use PrestaShop\PrestaShop\Adapter\Entity\Customer;
+use PrestaShop\PrestaShop\Adapter\Entity\Db;
 use PrestaShop\PrestaShop\Adapter\Entity\Group;
 use PrestaShop\PrestaShop\Adapter\Entity\GroupReduction;
 use PrestaShop\PrestaShop\Adapter\Entity\Product;
+use PrestaShop\PrestaShop\Adapter\Entity\ProductPresenterFactory;
+use PrestaShop\PrestaShop\Adapter\Entity\SpecificPrice;
+use PrestaShop\PrestaShop\Adapter\Entity\SpecificPriceFormatter;
+use PrestaShop\PrestaShop\Adapter\Entity\Tax;
+use PrestaShop\PrestaShop\Adapter\Entity\TaxConfiguration;
+use PrestaShop\PrestaShop\Adapter\Entity\Tools;
+use PrestaShop\PrestaShop\Adapter\Entity\Validate;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Presenter\Object\ObjectPresenter;
 use PrestaShop\PrestaShop\Core\Product\ProductExtraContentFinder;
-
 class ProductHelper
 {
 
@@ -39,7 +50,7 @@ class ProductHelper
     }
 
 
-    public static function transformDescriptionWithImg(Product $product, Context $context)
+    public static function transformDescriptionWithImg(Product $product, $context)
     {
         $desc = $product->description;
         $reg = '/\[img\-([0-9]+)\-(left|right)\-([a-zA-Z0-9-_]+)\]/';
@@ -60,7 +71,7 @@ class ProductHelper
      * @param Context $context
      * @return array
      */
-    public static function getVarsCategory(Category $category, Context $context): array
+    public static function getVarsCategory(Category $category, $context): array
     {
         $sub_categories = [];
         if (Validate::isLoadedObject($category)) {
@@ -70,7 +81,6 @@ class ProductHelper
             return [
                 'category' => $category,
                 'subCategories' => $sub_categories,
-                'subcategories' => $sub_categories,
                 'id_category_current' => (int) $category->id,
                 'id_category_parent' => (int) $category->id_parent,
                 'return_category_name' => Tools::safeOutput($category->getFieldByLang('name')),
@@ -83,7 +93,7 @@ class ProductHelper
     /**
      * Get price and tax .
      */
-    public static function getPriceAndTax(Product $product, Context $context, $id_product_attribute = 0)
+    public static function getPriceAndTax(Product $product, $context, $id_product_attribute = 0)
     {
         $id_customer = (isset($context->customer) ? (int) $context->customer->id : 0);
         $id_group = (int) Group::getCurrent()->id;
@@ -264,7 +274,7 @@ class ProductHelper
      *
      * @return array
      */
-    public static function formatQuantityDiscounts($specific_prices, $price, $tax_rate, $ecotax_amount, Currency $currency)
+    public static function formatQuantityDiscounts($specific_prices, $price, $tax_rate, $ecotax_amount, $currency)
     {
         $priceCalculationMethod = Group::getPriceDisplayMethod(Group::getCurrent()->id);
         $isTaxIncluded = false;
@@ -309,17 +319,17 @@ class ProductHelper
         ];
     }
 
-    public static function getFactory(Context $context)
+    public static function getFactory($context)
     {
         return new ProductPresenterFactory($context, new TaxConfiguration());
     }
 
-    public static function getProductPresentationSettings(Context $context)
+    public static function getProductPresentationSettings($context)
     {
         return self::getFactory($context)->getPresentationSettings();
     }
 
-    public static function getProductPresenter(Context $context)
+    public static function getProductPresenter($context)
     {
         return self::getFactory($context)->getPresenter();
     }
@@ -333,7 +343,7 @@ class ProductHelper
      * @param array $quantity_discounts
      * @return void
      */
-    public static function getTemplateVarProduct(Product $product, Context $context, int $id_product_attribute = 0, array $quantity_discounts = [])
+    public static function getTemplateVarProduct(Product $product, $context, int $id_product_attribute = 0, array $quantity_discounts = [])
     {
         $productSettings = self::getProductPresentationSettings($context);
         // Hook displayProductExtraContent
@@ -398,7 +408,7 @@ class ProductHelper
      * @param integer $id_product_attribute
      * @return int
      */
-    public static function getProductMinimalQuantity(Product $product, Context $context, int $id_product_attribute)
+    public static function getProductMinimalQuantity(Product $product, $context, int $id_product_attribute)
     {
         $minimal_quantity = 1;
 
@@ -419,7 +429,7 @@ class ProductHelper
      *
      * @return ProductController|null
      */
-    public static function findProductCombinationById($combinationId, Product $product, Context $context)
+    public static function findProductCombinationById($combinationId, Product $product, $context)
     {
         $combinations = $product->getAttributesGroups($context->language->id, $combinationId);
 
@@ -451,10 +461,10 @@ class ProductHelper
      *
      * @param array $product_row
      * @param Product $product
-     * @param Context $context
+     * @param $context
      * @return float
      */
-    public static function getProductEcotax(array $product_row, Product $product, Context $context): float
+    public static function getProductEcotax(array $product_row, Product $product, $context): float
     {
         $ecotax = $product_row['ecotax'];
 
@@ -481,7 +491,7 @@ class ProductHelper
     }
 
 
-    public static function addProductCustomizationData(array $product_full, Product $product, Context $context)
+    public static function addProductCustomizationData(array $product_full, Product $product, $context)
     {
         if ($product_full['customizable']) {
             $customizationData = [
@@ -577,7 +587,7 @@ class ProductHelper
      *
      * @return string
      */
-    public static function getProductPageTitle(array $meta = null, Product $product, Context $context, int $id_product_attribute = 0)
+    public static function getProductPageTitle(array $meta = null, Product $product, $context, int $id_product_attribute = 0)
     {
         $title = $product->name;
         if (isset($meta['title'])) {
@@ -606,7 +616,7 @@ class ProductHelper
     /**
      * get vars related to attribute groups and colors.
      */
-    public static function getAttributesGroups($product_for_template = null, Product $product, Context $context)
+    public static function getAttributesGroups($product_for_template = null, Product $product, $context)
     {
         $colors = [];
         $groups = [];

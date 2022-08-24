@@ -1,5 +1,6 @@
 <?php
 
+use NarrysTech\Api_Rest\classes\ProductHelper;
 use NarrysTech\Api_Rest\controllers\RestController;
 use PrestaShop\PrestaShop\Adapter\Entity\Category;
 use PrestaShop\PrestaShop\Adapter\Entity\Manufacturer;
@@ -21,11 +22,6 @@ class Api_RestProductModuleFrontController extends RestController
                 'name' => 'id',
                 'required' => true,
                 'type' => 'text'
-            ],
-            [
-                'name' => 'id_product_attribute',
-                'required' => false,
-                'type' => 'number'
             ],
         ]
     ];
@@ -49,16 +45,27 @@ class Api_RestProductModuleFrontController extends RestController
     protected function processGetRequest()
     {
         $inputs = $this->checkErrorsRequiredOrType();
-        $id_product = (int) $inputs['id'];
-        $this->product = new Product($id_product, true, $this->context->language->id);
+        $id_product = $inputs['id'];
 
+        if ((int) $id_product) {
+            $id_product = (int) $id_product;
+        } else {
+            $product_explode = explode('-', $id_product);
+            $id_product = (int) $product_explode[0];
+            if((int) $product_explode[1]){
+                $id_product_attribute = (int) $product_explode[1];
+            }else{
+                $id_product_attribute = 0;
+            }
+        }
+
+        $this->product = new Product($id_product, true, $this->context->language->id);
         if (!Validate::isLoadedObject($this->product)) {
             $this->renderAjaxErrors($this->trans('This product is no longer available.', [], 'Shop.Notifications.Error'));
         }
 
-        $id_product_attribute = (int) $inputs['id_product_attribute'];
         if (!$this->product->hasCombinations() || !ProductHelper::isValidCombination($id_product_attribute, $this->product->id)) {
-            $id_product_attribute = null;
+            $id_product_attribute = 0;
         }
 
         if (!(bool)$this->product->active) {
