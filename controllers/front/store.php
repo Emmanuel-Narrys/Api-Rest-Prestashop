@@ -43,7 +43,7 @@ class Api_RestStoreModuleFrontController extends RestController
 
         $schema = Tools::getValue('schema');
         $id_store = Tools::getValue('id');
-        $id_lang = Tools::getValue('id_lang');
+        $id_lang = $this->context->language->id;
 
         if ($schema && !is_null($schema)) {
             $this->datas = $this->params;

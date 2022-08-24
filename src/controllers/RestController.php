@@ -3,6 +3,7 @@
 namespace NarrysTech\Api_Rest\controllers;
 
 use NarrysTech\Api_Rest\classes\Helpers;
+use PrestaShop\PrestaShop\Adapter\Entity\Language;
 use PrestaShop\PrestaShop\Adapter\Entity\ModuleFrontController;
 use PrestaShop\PrestaShop\Adapter\Entity\Tools;
 use PrestaShop\PrestaShop\Adapter\Entity\Validate;
@@ -75,6 +76,15 @@ class RestController extends ModuleFrontController
 
         //Authenticate application with Bearer token
         $this->authenticate();
+
+        //Update current language
+        $id_lang = Tools::getValue('id_lang');
+        if ($id_lang) {
+            $language = new Language((int) $id_lang);
+            if (Validate::isLoadedObject($language)) {
+                $this->context->language = $language;
+            }
+        }
 
         //Check method is submit
         switch ($_SERVER['REQUEST_METHOD']) {
@@ -253,7 +263,7 @@ class RestController extends ModuleFrontController
         }
     }
 
-    public function getImage ($object, $id_image)
+    public function getImage($object, $id_image)
     {
         $retriever = new ImageRetriever($this->context->link);
         return $retriever->getImage($object, $id_image);

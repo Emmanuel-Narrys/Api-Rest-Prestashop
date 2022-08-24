@@ -37,6 +37,17 @@ class APIRoutes
                     'module' => 'api_rest'
                 ]
             ],
+            'module-api_rest-product' => [
+                'rule' => 'rest/product{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[_a-zA-Z0-9_-]+', 'param' => 'id']
+                ],
+                'controller' => 'product',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
             'module-api_rest-bootstrap' => [
                 'rule' => 'rest/bootstrap',
                 'keywords' => [],
@@ -50,6 +61,15 @@ class APIRoutes
                 'rule' => 'rest/languages',
                 'keywords' => [],
                 'controller' => 'language',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-comments' => [
+                'rule' => 'rest/comments',
+                'keywords' => [],
+                'controller' => 'comment',
                 'params' => [
                     'fc' => 'module',
                     'module' => 'api_rest'
