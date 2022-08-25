@@ -912,11 +912,11 @@ class RestController extends ModuleFrontController
         );
         return $lazy_product->getProduct();
 
-        return $presenter->present(
+        /* return $presenter->present(
             $productSettings,
             $product_full,
             $this->context->language
-        );
+        ); */
     }
 
     public function getIdProductAttributeByGroupOrRequestOrDefault()

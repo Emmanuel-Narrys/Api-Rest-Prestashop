@@ -16,12 +16,6 @@ class Api_RestProductModuleFrontController extends RestController
                 'type' => 'text'
             ],
             [
-                'name' => 'refresh',
-                'required' => false,
-                'type' => 'number',
-                'default' => 1
-            ],
-            [
                 'name' => 'id_product_attribute',
                 'required' => false,
                 'type' => 'number',
@@ -72,20 +66,18 @@ class Api_RestProductModuleFrontController extends RestController
             $this->renderAjaxErrors($this->trans('This product is not enable.', [], 'Shop.Notifications.Warning'));
         }
 
-        //this is when you change an attribute, every time a request is sent to get the price and its discount
-        if ((bool) $inputs['refresh']) {
-            $product = $this->getTemplateVarProduct();
-            $product['groups'] = $this->assignAttributesGroups($product);
-
-            $this->datas['product'] = $product;
-            $this->renderAjax();
-        }
-
-        $product = $this->getProduct();
+        $product = $this->getTemplateVarProduct();
         $product['groups'] = $this->assignAttributesGroups($product);
 
         $this->datas['product'] = $product;
         $this->renderAjax();
+
+
+        /* $product = $this->getProduct();
+        $product['groups'] = $this->assignAttributesGroups($product);
+
+        $this->datas['product'] = $product;
+        $this->renderAjax(); */
         parent::processGetRequest();
     }
 }
