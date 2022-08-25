@@ -425,7 +425,7 @@ class RESTProductLazyArray
         }
 
         if ($this->shouldShowOutOfStockLabel($this->settings, $this->product)) {
-            $config = $this->configuration->get('PS_LABEL_OOS_PRODUCTS_BOD');
+            $config = COnfiguration::get('PS_LABEL_OOS_PRODUCTS_BOD');
             $flags['out_of_stock'] = [
                 'type' => 'out_of_stock',
                 'label' => $config[$this->language->getId()] ?? null,
@@ -452,7 +452,7 @@ class RESTProductLazyArray
             return false;
         }
 
-        if (!$this->configuration->getBoolean('PS_STOCK_MANAGEMENT')) {
+        if (!(bool)Configuration::get('PS_STOCK_MANAGEMENT')) {
             return false;
         }
 
@@ -460,7 +460,7 @@ class RESTProductLazyArray
         if ($product['out_of_stock'] == OutOfStockType::OUT_OF_STOCK_AVAILABLE
             || (
                 $product['out_of_stock'] == OutOfStockType::OUT_OF_STOCK_DEFAULT
-                && $this->configuration->getBoolean('PS_ORDER_OUT_OF_STOCK')
+                && (bool)Configuration::get('PS_ORDER_OUT_OF_STOCK')
             )) {
             return false;
         }

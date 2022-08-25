@@ -19,7 +19,7 @@ class Api_RestProductModuleFrontController extends RestController
                 'name' => 'refresh',
                 'required' => false,
                 'type' => 'number',
-                'default' => 0
+                'default' => 1
             ],
             [
                 'name' => 'id_product_attribute',
