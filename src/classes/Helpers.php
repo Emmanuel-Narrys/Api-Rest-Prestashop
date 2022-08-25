@@ -2,6 +2,7 @@
 
 namespace NarrysTech\Api_Rest\classes;
 
+use PrestaShop\PrestaShop\Adapter\Entity\Context;
 use PrestaShop\PrestaShop\Adapter\Entity\Db;
 
 class Helpers
@@ -51,5 +52,19 @@ class Helpers
         }else {
             return false;
         }
+    }
+
+        
+    /**
+     * Get Format Price
+     *
+     * @param float $price
+     * @param string $iso_code
+     * @return string
+     */
+    public static function formatPrice(float $price, string $iso_code):string
+    {
+        $context = Context::getContext();
+        return $context->currentLocale->formatPrice($price, $iso_code);
     }
 }

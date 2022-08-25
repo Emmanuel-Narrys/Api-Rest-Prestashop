@@ -93,4 +93,9 @@ class Api_RestCommentModuleFrontController extends RestController
         $this->renderAjax();
         parent::processGetRequest();
     }
+
+    protected function processPostRequest()
+    {
+        parent::processPostRequest();
+    }
 }

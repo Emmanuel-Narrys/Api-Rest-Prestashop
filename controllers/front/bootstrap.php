@@ -28,8 +28,9 @@ class Api_RestBootstrapModuleFrontController extends RestController
 
         $this->datas['categories'] = $this->getAllCategoriesParent();
 
-        $ps_featuredproducts = Module::getInstanceByName('ps_featuredproducts');
-        $this->datas['featured_products'] = $ps_featuredproducts->getWidgetVariables(null, [])['products'];
+        /* $ps_featuredproducts = Module::getInstanceByName('ps_featuredproducts');
+        $this->datas['featured_products'] = $ps_featuredproducts->getWidgetVariables(null, [])['products']; */
+        $this->datas['featured_products'] = $this->getFeaturedProducts();
 
         $this->datas['number_of_ads'] = self::getNbProduct();
         $this->datas['number_of_customers'] = self::getNbCustomer();
