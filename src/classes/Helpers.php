@@ -2,8 +2,11 @@
 
 namespace NarrysTech\Api_Rest\classes;
 
+use PrestaShop\PrestaShop\Adapter\Entity\Category;
 use PrestaShop\PrestaShop\Adapter\Entity\Context;
+use PrestaShop\PrestaShop\Adapter\Entity\Customer;
 use PrestaShop\PrestaShop\Adapter\Entity\Db;
+use PrestaShop\PrestaShop\Adapter\Entity\Product;
 
 class Helpers
 {
@@ -53,8 +56,7 @@ class Helpers
             return false;
         }
     }
-
-        
+ 
     /**
      * Get Format Price
      *
@@ -66,5 +68,29 @@ class Helpers
     {
         $context = Context::getContext();
         return $context->currentLocale->formatPrice($price, $iso_code);
+    }
+    
+    public static function getNbCategory():int
+    {
+        $results = Category::getCategories();
+        return count($results);
+    }
+
+    public static function getNbProduct():int
+    {
+        $results = Product::getProducts(Context::getContext()->language->id, 0, 0, 'id_product', 'DESC', false, true);
+        return count($results);
+    }
+
+    public static function getNbCustomer():int
+    {
+        $results = Customer::getCustomers(true);
+        return count($results);
+    }
+    
+    public static function getNbProductsToCategory(int $id_category): int
+    {
+        $results = Product::getProducts(Context::getContext()->language->id, 0, 0, 'id_product', 'DESC', $id_category, true, Context::getContext());
+        return count($results);
     }
 }

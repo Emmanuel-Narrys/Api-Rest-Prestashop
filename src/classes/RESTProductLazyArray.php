@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Emmanuel-Narrys
  *
@@ -8,7 +9,7 @@
  * Best In Shops eCommerce Solutions Inc.
  *
  */
- 
+
 namespace NarrysTech\Api_Rest\classes;
 
 use Language;
@@ -160,8 +161,9 @@ class RESTProductLazyArray
             $this->product['unit_price'] = $this->product['unit_price_full'] = '';
         }
 
+        //Get prices with all currencies
         $currencies = Currency::getCurrencies(true, true);
-        foreach($currencies as $currency){
+        foreach ($currencies as $currency) {
             $amount = $currency->conversion_rate * $price;
             $this->product['price_currencies'][] = Helpers::formatPrice($amount, $currency->iso_code);
         }
@@ -178,7 +180,18 @@ class RESTProductLazyArray
         );
 
         // Get filtered product images matching the specified id_product_attribute
-        if (Tools::getValue('with_all_images')) {
+        $product_images = $this->filterImagesForCombination($productImages, $product['id_product_attribute']);
+
+        // Get default image for selected combination (used for product page, cart details, ...)
+        $this->product['default_image'] = reset($product_images);
+        foreach ($product_images as $image) {
+            // If one of the image is a cover it is used as such
+            if (isset($image['cover']) && null !== $image['cover']) {
+                $this->product['default_image'] = $image;
+                break;
+            }
+        }
+        /* if (Tools::getValue('with_all_images')) {
             $this->product['images'] = $this->filterImagesForCombination($productImages, $product['id_product_attribute']);
 
             // Get default image for selected combination (used for product page, cart details, ...)
@@ -187,7 +200,6 @@ class RESTProductLazyArray
                 // If one of the image is a cover it is used as such
                 if (isset($image['cover']) && null !== $image['cover']) {
                     $this->product['default_image'] = $image;
-
                     break;
                 }
             }
@@ -201,11 +213,10 @@ class RESTProductLazyArray
                 // If one of the image is a cover it is used as such
                 if (isset($image['cover']) && null !== $image['cover']) {
                     $this->product['default_image'] = $image['bySize'][Tools::getValue('image_size', "home_default")];
-
                     break;
                 }
             }
-        }
+        } */
 
         // Get generic product image, used for product listing
         if (isset($product['cover_image_id'])) {
@@ -214,7 +225,7 @@ class RESTProductLazyArray
                 if ($productImage['id_image'] == $product['cover_image_id']) {
                     if (Tools::getValue('with_all_images')) {
                         $this->product['cover'] = $productImage;
-                    }else{
+                    } else {
                         $this->product['cover'] = $productImage['bySize'][Tools::getValue('image_size', "home_default")];
                     }
                     break;
@@ -363,7 +374,7 @@ class RESTProductLazyArray
     {
         return $this->product;
     }
-    
+
     /**
      * @arrayAccess
      *
@@ -440,7 +451,7 @@ class RESTProductLazyArray
         $this->product['flags'] = $flags;
     }
 
-    
+
     /**
      * @param array $product
      *
@@ -457,11 +468,12 @@ class RESTProductLazyArray
         }
 
         // Displayed only if the order of out of stock product is denied.
-        if ($product['out_of_stock'] == OutOfStockType::OUT_OF_STOCK_AVAILABLE
-            || (
-                $product['out_of_stock'] == OutOfStockType::OUT_OF_STOCK_DEFAULT
+        if (
+            $product['out_of_stock'] == OutOfStockType::OUT_OF_STOCK_AVAILABLE
+            || ($product['out_of_stock'] == OutOfStockType::OUT_OF_STOCK_DEFAULT
                 && (bool)Configuration::get('PS_ORDER_OUT_OF_STOCK')
-            )) {
+            )
+        ) {
             return false;
         }
 

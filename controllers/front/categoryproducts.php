@@ -3,6 +3,7 @@
 use NarrysTech\Api_Rest\classes\RESTProductLazyArray;
 use NarrysTech\Api_Rest\controllers\RestController;
 use NarrysTech\Api_Rest\controllers\RestProductListingController;
+use PrestaShop\PrestaShop\Adapter\Category\CategoryProductSearchProvider;
 use PrestaShop\PrestaShop\Adapter\Entity\Category;
 use PrestaShop\PrestaShop\Adapter\Entity\Product;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
@@ -52,11 +53,27 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
 
         $this->category = new Category($id_category, true, $this->context->language->id);
         if (!Validate::isLoadedObject($this->category)) {
-            $this->renderAjaxErrors($this->trans('This product is no longer available.', [], 'Shop.Notifications.Error'));
+            $this->renderAjaxErrors($this->trans('This category is no longer available.', [], 'Shop.Notifications.Error'));
         }
 
         if (!(bool)$this->category->active) {
             $this->renderAjaxErrors($this->trans('This category is not enable.', [], 'Shop.Notifications.Warning'));
+        }
+
+        $categoryVar = $this->getTemplateVarCategory();
+
+        $filteredCategory = Hook::exec(
+            'filterCategoryContent',
+            ['object' => $categoryVar],
+            $id_module = null,
+            $array_return = false,
+            $check_exceptions = true,
+            $use_push = false,
+            $id_shop = null,
+            $chain = true
+        );
+        if (!empty($filteredCategory['object'])) {
+            $categoryVar = $filteredCategory['object'];
         }
 
         $variables = $this->getProductSearchVariables();
@@ -83,10 +100,10 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
             $productList[$key] = $lazy_product->getProduct();
         }
 
-        $facets = array();
+        /* $facets = array();
         foreach ($variables['facets']['filters']->getFacets() as $facet) {
             array_push($facets, $facet->toArray());
-        }
+        } */
 
         foreach ($productList as $key => $product) {
             $p = new Product(
@@ -99,7 +116,13 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
             $productList[$key]['manufacturer_name'] = $p->manufacturer_name;
         }
 
-        $this->datas['category'] = [
+        $variables['products'] = $productList;
+        $this->datas = array_merge([
+            'category' => $categoryVar,
+            'subcategories' => $this->getTemplateVarSubCategories(),
+        ], $variables);
+
+        /* $this->datas['category'] = [
             'description' => $this->category->description,
             'active' => $this->category->active,
             'images' => $this->getImage(
@@ -112,9 +135,94 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
             'sort_selected' => $variables['sort_selected'],
             'pagination' => $variables['pagination'],
             'facets' => $facets
-        ];
+        ]; */
 
         $this->renderAjax();
         parent::processGetRequest();
+    }
+
+    protected function getTemplateVarCategory()
+    {
+        $category = $this->objectPresenter->present($this->category);
+        $category['image'] = $this->getImage(
+            $this->category,
+            $this->category->id_image
+        );
+
+        return $category;
+    }
+
+    protected function getTemplateVarSubCategories()
+    {
+        return array_map(function (array $category) {
+            $object = new Category(
+                $category['id_category'],
+                $this->context->language->id
+            );
+
+            $category['image'] = $this->getImage(
+                $object,
+                $object->id_image
+            );
+
+            $category['url'] = $this->context->link->getCategoryLink(
+                $category['id_category'],
+                $category['link_rewrite']
+            );
+
+            return $category;
+        }, $this->category->getSubCategories($this->context->language->id));
+    }
+
+    public function getBreadcrumbLinks()
+    {
+        $breadcrumb = parent::getBreadcrumbLinks();
+
+        foreach ($this->category->getAllParents() as $category) {
+            if ($category->id_parent != 0 && !$category->is_root_category && $category->active) {
+                $breadcrumb['links'][] = [
+                    'title' => $category->name,
+                    'url' => $this->context->link->getCategoryLink($category),
+                ];
+            }
+        }
+
+        if ($this->category->id_parent != 0 && !$this->category->is_root_category && $category->active) {
+            $breadcrumb['links'][] = [
+                'title' => $this->category->name,
+                'url' => $this->context->link->getCategoryLink($this->category),
+            ];
+        }
+
+        return $breadcrumb;
+    }
+
+    public function getCategory()
+    {
+        return $this->category;
+    }
+
+    public function getListingLabel()
+    {
+        if (!Validate::isLoadedObject($this->category)) {
+            $this->category = new Category(
+                (int) Tools::getValue('id_category'),
+                $this->context->language->id
+            );
+        }
+
+        return $this->trans(
+            'Category: %category_name%',
+            ['%category_name%' => $this->category->name],
+            'Shop.Theme.Catalog'
+        );
+    }
+
+    protected function getDefaultProductSearchProvider()
+    {
+        return new CategoryProductSearchProvider(
+            $this->getTranslator(),
+            $this->category
+        );
     }
 }

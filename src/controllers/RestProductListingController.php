@@ -4,7 +4,6 @@ namespace NarrysTech\Api_Rest\controllers;
 
 use NarrysTech\Api_Rest\classes\Helpers;
 use PrestaShop\PrestaShop\Adapter\Entity\Configuration;
-use PrestaShop\PrestaShop\Adapter\Entity\Db;
 use PrestaShop\PrestaShop\Adapter\Entity\Hook;
 use PrestaShop\PrestaShop\Adapter\Entity\Language;
 use PrestaShop\PrestaShop\Adapter\Entity\Tools;
@@ -78,7 +77,6 @@ abstract class RestProductListingController extends ProductListingFrontControlle
 
     public function init()
     {
-
         header("Content-type: application/json");
         parent::init();
 
@@ -335,6 +333,10 @@ abstract class RestProductListingController extends ProductListingFrontControlle
 
         $query->setEncodedFacets($encodedFacets);
 
+        Hook::exec('actionProductSearchProviderRunQueryBefore', [
+            'query' => $query,
+        ]);
+
         // We're ready to run the actual query!
 
         /** @var ProductSearchResult $result */
@@ -342,6 +344,12 @@ abstract class RestProductListingController extends ProductListingFrontControlle
             $context,
             $query
         );
+
+        Hook::exec('actionProductSearchProviderRunQueryAfter', [
+            'query' => $query,
+            'result' => $result,
+        ]);
+
         if (Configuration::get('PS_CATALOG_MODE') && !Configuration::get('PS_CATALOG_MODE_WITH_PRICES')) {
             $this->disablePriceControls($result);
         }
@@ -353,7 +361,7 @@ abstract class RestProductListingController extends ProductListingFrontControlle
             $result->setCurrentSortOrder($query->getSortOrder());
         }
 
-        $id_manufacturer = (int)Tools::getValue('id_manufacturer', false);
+        /* $id_manufacturer = (int)Tools::getValue('id_manufacturer', false);
         $id_year = (int)Tools::getValue('id_year', false);
         $id_model = (int)Tools::getValue('id_model', false);
         $id_category = (int)Tools::getValue('id_category');
@@ -372,16 +380,37 @@ abstract class RestProductListingController extends ProductListingFrontControlle
         WHERE p.id_category_default = ' . $id_category . ' AND p.id_manufacturer = ' . $id_manufacturer . ' AND py.id_year = ' . $id_year . ' AND mp.id_model = ' . $id_model . '';
 
             $result->setTotalProductsCount((int)DB::getInstance()->getValue($sql));
-        }
+        } */
 
         // prepare the products
         $products = $result->getProducts();
-        //var_dump($products);die;
-
-        // render the facets
-        $facets = $this->getFacets(
+        // with the core
+        $rendered_facets = $this->renderFacets(
             $result
         );
+        $rendered_active_filters = $this->renderActiveFilters(
+            $result
+        );
+        // render the facets
+        /* if ($provider instanceof FacetsRendererInterface) {
+            // with the provider if it wants to
+            $rendered_facets = $provider->renderFacets(
+                $context,
+                $result
+            );
+            $rendered_active_filters = $provider->renderActiveFilters(
+                $context,
+                $result
+            );
+        } else {
+            // with the core
+            $rendered_facets = $this->renderFacets(
+                $result
+            );
+            $rendered_active_filters = $this->renderActiveFilters(
+                $result
+            );
+        } */
 
         $pagination = $this->getTemplateVarPagination(
             $query,
@@ -409,21 +438,22 @@ abstract class RestProductListingController extends ProductListingFrontControlle
             }
         }
 
-        $searchVariables = array(
+        $searchVariables = [
             'result' => $result,
             'label' => $this->getListingLabel(),
             'products' => $products,
             'sort_orders' => $sort_orders,
             'sort_selected' => $sort_selected,
             'pagination' => $pagination,
-            'facets' => $facets,
+            'rendered_facets' => $rendered_facets,
+            'rendered_active_filters' => $rendered_active_filters,
             'js_enabled' => $this->ajax,
-            'current_url' => $this->updateQueryString(array(
+            'current_url' => $this->updateQueryString([
                 'q' => $result->getEncodedFacets(),
-            )),
-        );
+            ]),
+        ];
 
-        Hook::exec('filterProductSearch', array('searchVariables' => &$searchVariables));
+        Hook::exec('filterProductSearch', ['searchVariables' => &$searchVariables]);
         Hook::exec('actionProductSearchAfter', $searchVariables);
 
         return $searchVariables;
@@ -512,4 +542,78 @@ abstract class RestProductListingController extends ProductListingFrontControlle
             $this->getTranslator()
         );
     }
+
+    /**
+     * Renders an array of active filters.
+     *
+     * @param array $facets
+     *
+     * @return array the values of the facets
+     */
+    protected function renderActiveFilters(ProductSearchResult $result)
+    {
+        $facetCollection = $result->getFacetCollection();
+        // not all search providers generate menus
+        if (empty($facetCollection)) {
+            return '';
+        }
+
+        $facetsVar = array_map(
+            [$this, 'prepareFacetForTemplate'],
+            $facetCollection->getFacets()
+        );
+
+        $activeFilters = [];
+        foreach ($facetsVar as $facet) {
+            foreach ($facet['filters'] as $filter) {
+                if ($filter['active']) {
+                    $activeFilters[] = $filter;
+                }
+            }
+        }
+
+        return [
+            'activeFilters' => $activeFilters,
+            'clear_all_link' => $this->updateQueryString(['q' => null, 'page' => null]),
+        ];
+    }
+    
+    /**
+     * Renders an array of facets.
+     *
+     * @param array $facets
+     *
+     * @return array the values of the facets
+     */
+    protected function renderFacets(ProductSearchResult $result)
+    {
+        $facetCollection = $result->getFacetCollection();
+        // not all search providers generate menus
+        if (empty($facetCollection)) {
+            return '';
+        }
+
+        $facetsVar = array_map(
+            [$this, 'prepareFacetForTemplate'],
+            $facetCollection->getFacets()
+        );
+
+        $activeFilters = [];
+        foreach ($facetsVar as $facet) {
+            foreach ($facet['filters'] as $filter) {
+                if ($filter['active']) {
+                    $activeFilters[] = $filter;
+                }
+            }
+        }
+
+        return [
+            'facets' => $facetsVar,
+            'js_enabled' => $this->ajax,
+            'activeFilters' => $activeFilters,
+            'sort_order' => $result->getCurrentSortOrder()->toString(),
+            'clear_all_link' => $this->updateQueryString(['q' => null, 'page' => null]),
+        ];
+    }
+
 }

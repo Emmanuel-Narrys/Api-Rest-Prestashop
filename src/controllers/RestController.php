@@ -2,13 +2,12 @@
 
 namespace NarrysTech\Api_Rest\controllers;
 
+use Category;
 use NarrysTech\Api_Rest\classes\Helpers;
 use NarrysTech\Api_Rest\classes\RESTProductLazyArray;
 use PrestaShop\PrestaShop\Adapter\Category\CategoryProductSearchProvider;
 use PrestaShop\PrestaShop\Adapter\Entity\Address;
-use PrestaShop\PrestaShop\Adapter\Entity\Category;
 use PrestaShop\PrestaShop\Adapter\Entity\Configuration;
-use PrestaShop\PrestaShop\Adapter\Entity\Context;
 use PrestaShop\PrestaShop\Adapter\Entity\Customer;
 use PrestaShop\PrestaShop\Adapter\Entity\Db;
 use PrestaShop\PrestaShop\Adapter\Entity\Group;
@@ -166,7 +165,6 @@ class RestController extends ModuleFrontController
         ], $this->codeMethod, false));
         die;
     }
-
 
     /**
      * Undocumented function
@@ -541,7 +539,6 @@ class RestController extends ModuleFrontController
 
         return $product;
     }
-
 
     private function fillImages(
         array $product,
@@ -1357,7 +1354,6 @@ class RestController extends ModuleFrontController
         }
     }
 
-
     public function getFeaturedProducts()
     {
         $category = new Category((int) Configuration::get('HOME_FEATURED_CAT'));
@@ -1413,7 +1409,6 @@ class RestController extends ModuleFrontController
 
         return $products_for_template;
     }
-
     
     public function getConfigFieldsValues()
     {
@@ -1423,4 +1418,48 @@ class RestController extends ModuleFrontController
             'HOME_FEATURED_RANDOMIZE' => Tools::getValue('HOME_FEATURED_RANDOMIZE', (bool) Configuration::get('HOME_FEATURED_RANDOMIZE')),
         );
     }
+    
+    protected function getTemplateVarCategory(Category $category)
+    {
+        $category_array = $this->objectPresenter->present($category);
+        $category_array['image'] = $this->getImage(
+            $category,
+            $category->id_image
+        );
+
+        $category_array['number_of_ads'] = Helpers::getNbProductsToCategory($category->id);
+
+        return $category_array;
+    }
+    
+    protected function getTemplateVarSubCategories(Category $_category)
+    {
+        return array_map(function (array $category) {
+            $object = new Category(
+                $category['id_category'],
+                $this->context->language->id
+            );
+
+            $category['image'] = $this->getImage(
+                $object,
+                $object->id_image
+            );
+
+            $category['url'] = $this->context->link->getCategoryLink(
+                $category['id_category'],
+                $category['link_rewrite']
+            );
+
+            $category['number_of_ads'] = Helpers::getNbProductsToCategory($object->id);
+
+            return $category;
+        }, $_category->getSubCategories($this->context->language->id));
+    }
+
+    protected function getAllCategoriesParent(): array
+    {
+        $rout_category  = Category::getRootCategory($this->context->language->id);
+        return $this->getTemplateVarSubCategories($rout_category);
+    }
+
 }
