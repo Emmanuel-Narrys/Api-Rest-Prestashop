@@ -165,14 +165,19 @@ class RESTProductLazyArray
         $currencies = Currency::getCurrencies(true, true);
         foreach ($currencies as $currency) {
             $amount = $currency->conversion_rate * $price;
-            $this->product['price_currencies'][] = Helpers::formatPrice($amount, $currency->iso_code);
+            $this->product['price_currencies'][] = (object) [
+                "price" => Helpers::formatPrice($amount, $currency->iso_code),
+                "reduction" => $currency->reduction
+            ];
         }
     }
 
-    private function fillImages(
-        array $product,
-        Language $language
-    ) {
+    /**
+     * @param array $product
+     * @param Language $language
+     */
+    protected function fillImages(array $product, Language $language): void
+    {
         // Get all product images, including potential cover
         $productImages = $this->imageRetriever->getAllProductImages(
             $product,
@@ -180,54 +185,25 @@ class RESTProductLazyArray
         );
 
         // Get filtered product images matching the specified id_product_attribute
-        $product_images = $this->filterImagesForCombination($productImages, $product['id_product_attribute']);
+        $this->product['images'] = $this->filterImagesForCombination($productImages, $product['id_product_attribute']);
 
         // Get default image for selected combination (used for product page, cart details, ...)
-        $this->product['default_image'] = reset($product_images);
-        foreach ($product_images as $image) {
+        $this->product['default_image'] = reset($this->product['images']);
+        foreach ($this->product['images'] as $image) {
             // If one of the image is a cover it is used as such
             if (isset($image['cover']) && null !== $image['cover']) {
                 $this->product['default_image'] = $image;
+
                 break;
             }
         }
-        /* if (Tools::getValue('with_all_images')) {
-            $this->product['images'] = $this->filterImagesForCombination($productImages, $product['id_product_attribute']);
-
-            // Get default image for selected combination (used for product page, cart details, ...)
-            $this->product['default_image'] = reset($this->product['images']);
-            foreach ($this->product['images'] as $image) {
-                // If one of the image is a cover it is used as such
-                if (isset($image['cover']) && null !== $image['cover']) {
-                    $this->product['default_image'] = $image;
-                    break;
-                }
-            }
-        }else{
-            $images = $this->filterImagesForCombination($productImages, $product['id_product_attribute']);
-
-            // Get default image for selected combination (used for product page, cart details, ...)
-            $tmp = reset($images);
-            $this->product['default_image'] = $tmp['bySize'][Tools::getValue('image_size', "home_default")];
-            foreach ($images as $image) {
-                // If one of the image is a cover it is used as such
-                if (isset($image['cover']) && null !== $image['cover']) {
-                    $this->product['default_image'] = $image['bySize'][Tools::getValue('image_size', "home_default")];
-                    break;
-                }
-            }
-        } */
 
         // Get generic product image, used for product listing
         if (isset($product['cover_image_id'])) {
             // First try to find cover in product images
             foreach ($productImages as $productImage) {
                 if ($productImage['id_image'] == $product['cover_image_id']) {
-                    if (Tools::getValue('with_all_images')) {
-                        $this->product['cover'] = $productImage;
-                    } else {
-                        $this->product['cover'] = $productImage['bySize'][Tools::getValue('image_size', "home_default")];
-                    }
+                    $this->product['cover'] = $productImage;
                     break;
                 }
             }
