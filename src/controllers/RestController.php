@@ -194,6 +194,9 @@ class RestController extends ModuleFrontController
             case 'password':
                 return Validate::isString($value);
                 break;
+            case 'date':
+                return Validate::isDate($value);
+                break;
             default:
                 return true;
                 break;
@@ -1409,7 +1412,7 @@ class RestController extends ModuleFrontController
 
         return $products_for_template;
     }
-    
+
     public function getConfigFieldsValues()
     {
         return array(
@@ -1418,7 +1421,7 @@ class RestController extends ModuleFrontController
             'HOME_FEATURED_RANDOMIZE' => Tools::getValue('HOME_FEATURED_RANDOMIZE', (bool) Configuration::get('HOME_FEATURED_RANDOMIZE')),
         );
     }
-    
+
     protected function getTemplateVarCategory(Category $category)
     {
         $category_array = $this->objectPresenter->present($category);
@@ -1431,7 +1434,7 @@ class RestController extends ModuleFrontController
 
         return $category_array;
     }
-    
+
     protected function getTemplateVarSubCategories(Category $_category)
     {
         return array_map(function (array $category) {
@@ -1461,5 +1464,4 @@ class RestController extends ModuleFrontController
         $rout_category  = Category::getRootCategory($this->context->language->id);
         return $this->getTemplateVarSubCategories($rout_category);
     }
-
 }

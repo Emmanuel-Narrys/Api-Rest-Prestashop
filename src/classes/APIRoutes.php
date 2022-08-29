@@ -108,6 +108,24 @@ class APIRoutes
                     'module' => 'api_rest'
                 ]
             ],
+            'module-api_rest-customer' => [
+                'rule' => 'rest/front-office/customer',
+                'keywords' => [],
+                'controller' => 'customer',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-customer-sponsorships' => [
+                'rule' => 'rest/front-office/customer/sponsorships',
+                'keywords' => [],
+                'controller' => 'customersponsorships',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
         ];
     }
 }
