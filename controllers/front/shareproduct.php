@@ -73,7 +73,7 @@ class Api_RestShareproductModuleFrontController extends RestController
         $sharing_img = urlencode(addcslashes($this->context->link->getImageLink($this->product->link_rewrite, $image_cover_id), "'"));
 
         if (Configuration::get('PS_SC_FACEBOOK')) {
-            $social_share_links['facebook'] = [
+            $social_share_links[] = [
                 'label' => $this->trans('Share', [], 'Modules.Sharebuttons.Shop'),
                 'class' => 'facebook',
                 'url' => 'https://www.facebook.com/sharer.php?u=' . $sharing_url,
@@ -81,7 +81,7 @@ class Api_RestShareproductModuleFrontController extends RestController
         }
 
         if (Configuration::get('PS_SC_TWITTER')) {
-            $social_share_links['twitter'] = [
+            $social_share_links[] = [
                 'label' => $this->trans('Tweet', [], 'Modules.Sharebuttons.Shop'),
                 'class' => 'twitter',
                 'url' => 'https://twitter.com/intent/tweet?text=' . $sharing_name . ' ' . $sharing_url,
@@ -89,7 +89,7 @@ class Api_RestShareproductModuleFrontController extends RestController
         }
 
         if (Configuration::get('PS_SC_PINTEREST')) {
-            $social_share_links['pinterest'] = [
+            $social_share_links[] = [
                 'label' => $this->trans('Pinterest', [], 'Modules.Sharebuttons.Shop'),
                 'class' => 'pinterest',
                 'url' => 'https://www.pinterest.com/pin/create/button/?media=' . $sharing_img . '&url=' . $sharing_url,
