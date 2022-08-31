@@ -108,6 +108,15 @@ class APIRoutes
                     'module' => 'api_rest'
                 ]
             ],
+            'module-api_rest-customer-comments' => [
+                'rule' => 'rest/front-office/customer/comment',
+                'keywords' => [],
+                'controller' => 'postcomment',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
             'module-api_rest-customer' => [
                 'rule' => 'rest/front-office/customer',
                 'keywords' => [],
@@ -121,6 +130,17 @@ class APIRoutes
                 'rule' => 'rest/front-office/customer/sponsorships',
                 'keywords' => [],
                 'controller' => 'customersponsorships',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-city' => [
+                'rule' => 'rest/front-office/cities{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[_a-zA-Z0-9_-]+', 'param' => 'id']
+                ],
+                'controller' => 'city',
                 'params' => [
                     'fc' => 'module',
                     'module' => 'api_rest'

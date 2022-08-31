@@ -12,7 +12,7 @@ class Api_RestCommentModuleFrontController extends RestController
             [
                 'name' => 'id_product',
                 'required' => true,
-                'type' => 'text'
+                'type' => 'number'
             ],
             [
                 'name' => 'page',
@@ -92,10 +92,5 @@ class Api_RestCommentModuleFrontController extends RestController
 
         $this->renderAjax();
         parent::processGetRequest();
-    }
-
-    protected function processPostRequest()
-    {
-        parent::processPostRequest();
     }
 }
