@@ -1432,6 +1432,9 @@ class RestController extends ModuleFrontController
 
         $category_array['number_of_ads'] = Helpers::getNbProductsToCategory($category->id);
 
+        
+        $category_array['subcategories'] = $this->getTemplateVarSubCategories($category);
+
         return $category_array;
     }
 
@@ -1455,7 +1458,10 @@ class RestController extends ModuleFrontController
 
             $category['number_of_ads'] = Helpers::getNbProductsToCategory($object->id);
 
+            $category['subcategories'] = $this->getTemplateVarSubCategories($object);
+
             return $category;
+            
         }, $_category->getSubCategories($this->context->language->id));
     }
 

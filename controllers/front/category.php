@@ -70,7 +70,6 @@ class Api_RestCategoryModuleFrontController extends RestController
 
             $this->datas = [
                 'category' => $categoryVar,
-                'subcategories' => $this->getTemplateVarSubCategories($this->category),
             ];
 
             $this->renderAjax();

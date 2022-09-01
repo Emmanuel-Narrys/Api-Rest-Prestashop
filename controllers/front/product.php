@@ -1,7 +1,6 @@
 <?php
 
 use NarrysTech\Api_Rest\controllers\RestController;
-use PrestaShop\PrestaShop\Adapter\Entity\Category;
 use PrestaShop\PrestaShop\Adapter\Entity\Product;
 
 class Api_RestProductModuleFrontController extends RestController
