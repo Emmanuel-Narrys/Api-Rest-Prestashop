@@ -1,7 +1,10 @@
 <?php
 
+use NarrysTech\Api_Rest\classes\RESTProductLazyArray;
 use NarrysTech\Api_Rest\controllers\RestController;
 use PrestaShop\PrestaShop\Adapter\Entity\Product;
+use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
+use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 
 class Api_RestProductModuleFrontController extends RestController
 {
@@ -66,7 +69,30 @@ class Api_RestProductModuleFrontController extends RestController
         }
 
         $product = $this->getTemplateVarProduct();
+
         $product['groups'] = $this->assignAttributesGroups($product);
+
+        //Get products accessory with this product
+        $product['accessories'] = $this->product->getAccessories($this->context->language->id);
+        $retriever = new ImageRetriever(
+            $this->context->link
+        );
+        $settings = $this->getProductPresentationSettings();
+        foreach ($product['accessories'] as $key => $p) {
+            $populated_product = (new ProductAssembler($this->context))
+                ->assembleProduct($p);
+
+            $lazy_product = new RESTProductLazyArray(
+                $settings,
+                $populated_product,
+                $this->context->language,
+                new PriceFormatter(),
+                $retriever,
+                $this->context->getTranslator()
+            );
+
+            $product['accessories'][$key] = $lazy_product->getProduct();
+        }
 
         $this->datas['product'] = $product;
         $this->renderAjax();

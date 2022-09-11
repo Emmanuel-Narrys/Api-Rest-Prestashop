@@ -919,6 +919,30 @@ class RestController extends ModuleFrontController
         ); */
     }
 
+
+    /**
+     * Get Virtual product attchements 
+     *
+     * @param int $id_product product id
+     * @return array product attachment data
+     */
+    public function getProductAttachment($id_product)
+    {
+        $final_attachment_data = array();
+        $attachments = Product::getAttachmentsStatic((int)$this->context->language->id, $id_product);
+        $count = 0;
+        foreach ($attachments as $attachment) {
+            $final_attachment_data[$count]['download_link'] = $this->context->link->getPageLink('attachment', true, null, "id_attachment=" . $attachment['id_attachment']);
+            $final_attachment_data[$count]['file_size'] = Tools::formatBytes($attachment['file_size'], 2);
+            $final_attachment_data[$count]['description'] = $attachment['description'];
+            $final_attachment_data[$count]['file_name'] = $attachment['file_name'];
+            $final_attachment_data[$count]['mime'] = $attachment['mime'];
+            $final_attachment_data[$count]['display_name'] = $attachment['name'];
+            $count++;
+        }
+        return $attachments;
+    }
+
     public function getIdProductAttributeByGroupOrRequestOrDefault()
     {
         $idProductAttribute = $this->getIdProductAttributeByGroup();
@@ -1432,7 +1456,7 @@ class RestController extends ModuleFrontController
 
         $category_array['number_of_ads'] = Helpers::getNbProductsToCategory($category->id);
 
-        
+
         $category_array['subcategories'] = $this->getTemplateVarSubCategories($category);
 
         return $category_array;
@@ -1461,7 +1485,6 @@ class RestController extends ModuleFrontController
             $category['subcategories'] = $this->getTemplateVarSubCategories($object);
 
             return $category;
-            
         }, $_category->getSubCategories($this->context->language->id));
     }
 

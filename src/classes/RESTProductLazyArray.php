@@ -12,6 +12,8 @@
 
 namespace NarrysTech\Api_Rest\classes;
 
+use Context;
+use DateTime;
 use Language;
 use PrestaShop\Decimal\Number;
 use PrestaShop\Decimal\Operation\Rounding;
@@ -25,6 +27,8 @@ use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Core\Domain\Product\Stock\ValueObject\OutOfStockType;
 use PrestaShop\PrestaShop\Core\Product\ProductPresentationSettings;
 use Symfony\Component\Translation\TranslatorInterface;
+use Viaziza\Smalldeals\Classes\Boutique;
+use Viaziza\Smalldeals\Classes\ProductStore;
 
 class RESTProductLazyArray
 {
@@ -96,6 +100,9 @@ class RESTProductLazyArray
         );
 
         $this->getFlags();
+
+        $this->addStore();
+        $this->addDateAgo();
     }
 
     protected function addPriceInformation(
@@ -471,5 +478,41 @@ class RESTProductLazyArray
         }
 
         return true;
+    }
+
+    //Add store into product
+    public function addStore(){
+        $id_lang = Context::getContext()->language->id;
+        $products_stores = ProductStore::getProductStores((int) $this->product['id_product'], null, $id_lang);
+        if(!empty($products_stores)){
+            $store = Boutique::getStore((int) $products_stores[0]->id_sd_store, $id_lang);
+        }else{
+            $store = null;
+        }
+
+        $this->product['store'] = $store;
+    }
+
+    public function addDateAgo (){
+        $now = new DateTime();
+        $creat = new DateTime($this->product['date_add']);
+        $diff = $now->diff($creat);
+        $nb_day = $diff->days;
+        $ago = "";
+        if($nb_day){
+            if ($nb_day > 7 && $nb_day <= 30){
+                $nb_week = floor($nb_day / 7);
+                $ago = "$nb_week semaines passé";
+            }else if ($nb_day > 30 && $nb_day <= 365){
+                $nb_month = floor($nb_day / 30);
+                $ago = "$nb_month mois passé";
+            }else if ($nb_day > 365){
+                $nb_yesr = floor($nb_day / 365);
+                $ago = "$nb_yesr années passé";
+            }else {
+                $ago = "$nb_day jours passé";
+            }
+        }
+        $this->product['date_ago'] = $ago;
     }
 }
