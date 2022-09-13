@@ -166,14 +166,14 @@ class RestController extends ModuleFrontController
         die;
     }
 
+    
     /**
      * Undocumented function
      *
      * @param string $type
-     * @param mixed $value
      * @return boolean
      */
-    public function isValideType(string $type, string $value): bool
+    public function isValideType(string $type, $value): bool
     {
         switch ($type) {
             case 'text':
@@ -225,12 +225,16 @@ class RestController extends ModuleFrontController
             //Get Value
             $value = Tools::getValue($name);
 
+            if($type == 'array'){
+                $value = json_decode($value) ? json_decode($value) : ($value == false || $value == null ? [] : $value);
+            }
+
             //Field is required and null
             if (($required === true) && (($value == false || is_null($value)))) {
                 $this->errors["required"][] = $a;
             }
             //Field type if not valide
-            if ($this->isValideType($type, $value) == false) {
+            if (($required === true) && $this->isValideType($type, $value) == false) {
                 $this->errors["type"][] = $a;
             }
             //If field is not required and if not submit

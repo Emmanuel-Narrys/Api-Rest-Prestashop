@@ -157,6 +157,28 @@ class APIRoutes
                     'module' => 'api_rest'
                 ]
             ],
+            'module-api_rest-stores-update' => [
+                'rule' => 'rest/front-office/update/stores{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[_a-zA-Z0-9_-]+', 'param' => 'id']
+                ],
+                'controller' => 'adminstore_update',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-stores-delete' => [
+                'rule' => 'rest/front-office/delete/stores{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[_a-zA-Z0-9_-]+', 'param' => 'id']
+                ],
+                'controller' => 'adminstore_delete',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
         ];
     }
 }

@@ -20,7 +20,7 @@ class Api_RestStoreModuleFrontController extends RestController
                 "name" => "id",
                 "required" => false,
                 "type" => "text",
-                'default' => false
+                'default' => 0
             ],
             /* 
             [

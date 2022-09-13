@@ -11,7 +11,7 @@ class Api_RestCategoryModuleFrontController extends RestController
                 'name' => 'id',
                 'required' => false,
                 'type' => 'text',
-                'default' => false
+                'default' => 0
             ],
         ]
     ];
