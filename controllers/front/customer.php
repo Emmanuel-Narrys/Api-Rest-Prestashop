@@ -1,6 +1,7 @@
 <?php
 
 use NarrysTech\Api_Rest\controllers\AuthRestController;
+use Viaziza\Smalldeals\Classes\City;
 
 class Api_RestCustomerModuleFrontController extends AuthRestController
 {
@@ -8,11 +9,11 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
     public $params = [
         'table' => 'Customer',
         'fields' => [
-            [
+            /* [
                 'name' => 'id_customer',
                 'type' => 'number',
                 'required' => true,
-            ],
+            ], */
             [
                 'name' => 'id_gender',
                 'type' => 'number',
@@ -111,9 +112,15 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
             $address = null;
             $country = null;
             $state = null;
+            $city = null;
         } else {
             $country = new Country($address->id_country, $id_lang);
             $state = new State($address->id_state, $id_lang);
+            if ($address->id_sd_city = !0) {
+                $city = new City($address->id_sd_city, $id_lang);
+            } else {
+                $city = null;
+            }
         }
 
         $gender = new Gender($customer->id_gender, $id_lang);
@@ -151,7 +158,12 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
                     'id_state' => $state->id,
                     'name' => $state->name,
                     'iso_code' => $state->iso_code
-                ]
+                ],
+                '_city' => $city ? (object) [
+                    'id_city' => $city->id,
+                    'name' => $city->name
+                ] : $city,
+
             ] : $address,
             'gender' => $gender ? (object) [
                 'id_gender' => $gender->id,
@@ -189,7 +201,7 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
             $address->id_customer = $customer->id;
             $address->id_country = (int) $inputs['id_country'];
             $address->id_state = (int) $inputs['id_state'];
-            $address->id_city = (int) $inputs['id_city'];
+            $address->id_sd_city = (int) $inputs['id_city'];
             $address->alias = $customer->firstname . ' ' . $customer->lastname;
             $address->firstname = $customer->firstname;
             $address->lastname = $customer->lastname;
@@ -205,7 +217,7 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
         } else {
             $address->id_country = (int) $inputs['id_country'];
             $address->id_state = (int) $inputs['id_state'];
-            $address->id_city = (int) $inputs['id_city'];
+            $address->id_sd_city = (int) $inputs['id_city'];
             $address->address1 = $inputs['address1'];
             $address->address2 = isset($inputs['address2']) ? $inputs['address2'] : '';
             $address->city = isset($inputs['city']) ? $inputs['city'] : '';
@@ -220,6 +232,11 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
         $country = new Country($address->id_country, $id_lang);
         $state = new State($address->id_state, $id_lang);
         $gender = new Gender($customer->id_gender, $id_lang);
+        if ($address->id_sd_city != 0) {
+            $city = new City($address->id_sd_city, $id_lang);
+        } else {
+            $city = null;
+        }
 
         $this->datas['customer'] = array_merge([
             'id_customer' => $customer->id,
@@ -251,7 +268,11 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
                     'id_state' => $state->id,
                     'name' => $state->name,
                     'iso_code' => $state->iso_code
-                ]
+                ],
+                '_city' => $city ? (object) [
+                    'id_city' => $city->id,
+                    'name' => $city->name
+                ] : $city,
             ] : $address,
             'gender' => $gender ? (object) [
                 'id_gender' => $gender->id,

@@ -197,6 +197,9 @@ class RestController extends ModuleFrontController
             case 'date':
                 return Validate::isDate($value);
                 break;
+            case 'array':
+                return is_array($value);
+                break;
             default:
                 return true;
                 break;
@@ -255,6 +258,69 @@ class RestController extends ModuleFrontController
             $errors["message"] = $this->getTranslator()->trans("Fields is not correct!");
             foreach ($this->errors["type"] as $field) {
                 $errors["fields"][$field["name"]] = Tools::getValue($field["name"]);
+            }
+            $this->datas["errors"] = $errors;
+            $this->renderAjax($this->codeErrors, false);
+        }
+
+        return $inputs;
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @return array
+     */
+    public function checkFilesErrorsRequiredOrType(): array
+    {
+        $inputs = array();
+
+        foreach ($this->params['files_fields'] as $key => $a) {
+            //Get Name
+            $name = $a['name'];
+            //Get Required
+            $required = (bool) $a['required'];
+            //Get Type
+            $type = $a['type'];
+            //Get Value
+            $value = isset($_FILES[$name]) ? $_FILES[$name] : false;
+            //Get Extentions
+            $extensions = $a['extensions'];
+
+            //Field is required and null
+            if (($required === true) && (($value == false || is_null($value) || empty($value)))) {
+                $this->errors["required"][] = $a;
+            }
+            //If field is not required and if not submit
+            if ($required === false && (($value == false || is_null($value) || empty($value)))) {
+                $value = isset($a["default"]) ? $a["default"] : [];
+            }
+
+            $extension = ($value && !empty($value)) ? pathinfo($value['name'], PATHINFO_EXTENSION) : "";
+            if(!in_array($extension, $extensions) && ($required === true) && ($value && !empty($value))){
+                $this->errors['extensions'][] = $a;
+            }
+
+            $inputs[$name] = $value;
+        }
+
+        //If has errors required
+        if (isset($this->errors["required"]) && !empty($this->errors["required"])) {
+            $errors = [];
+            $errors["message"] = $this->getTranslator()->trans("Fields is required!");
+            foreach ($this->errors["required"] as $field) {
+                $errors["fields"][] = $field["name"];
+            }
+            $this->datas["errors"] = $errors;
+            $this->renderAjax($this->codeErrors, false);
+        }
+
+        //If has errors extensions
+        if (isset($this->errors["extensions"]) && !empty($this->errors["extensions"])) {
+            $errors = [];
+            $errors["message"] = $this->getTranslator()->trans("Extention is not correct!");
+            foreach ($this->errors["extensions"] as $field) {
+                $errors["fields"][$field["name"]] = isset($_FILES[$field['name']]) ? $_FILES[$field['name']] : false;
             }
             $this->datas["errors"] = $errors;
             $this->renderAjax($this->codeErrors, false);
