@@ -12,6 +12,7 @@ use PrestaShop\PrestaShop\Adapter\Entity\Db;
 use PrestaShop\PrestaShop\Adapter\Entity\DbQuery;
 use PrestaShop\PrestaShop\Adapter\Entity\Hook;
 use PrestaShop\PrestaShop\Adapter\Entity\Tools;
+use Validate;
 
 class AuthRestController extends RestController
 {
@@ -50,7 +51,19 @@ class AuthRestController extends RestController
             } else {
                 $this->context->cookie->session_id = (int) $customerSession->id_customer_session;
                 $this->context->cookie->session_token = $customerSession->token;
-                return new Customer((int)$customerSession->id_customer);
+                $customer = new Customer((int)$customerSession->id_customer);
+                if(!Validate::isLoadedObject($customer)){
+                    $this->renderAjaxErrors(
+                        "Authentication failed. The session token is not correct.",
+                        $this->codeAuthenticateCustomer
+                    );
+                }else if (!$customer->active){
+                    $this->renderAjaxErrors(
+                        "Authentication failed. The customer account is disable.",
+                        $this->codeAuthenticateCustomer
+                    );
+                }
+                return $customer;
             }
         } catch (\Exception $e) {
             $this->renderAjaxErrors($e->getMessage(), $this->codeServeur);

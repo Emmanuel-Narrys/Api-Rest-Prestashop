@@ -17,7 +17,7 @@ class Api_RestShareproductModuleFrontController extends RestController
             [
                 'name' => 'url_product',
                 'required' => true,
-                'type' => 'text'
+                'type' => 'url'
             ],
         ]
     ];

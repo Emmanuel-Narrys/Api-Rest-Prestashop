@@ -135,17 +135,6 @@ class APIRoutes
                     'module' => 'api_rest'
                 ]
             ],
-            'module-api_rest-city' => [
-                'rule' => 'rest/front-office/cities{/:id}',
-                'keywords' => [
-                    'id' => ['regexp' => '[_a-zA-Z0-9_-]+', 'param' => 'id']
-                ],
-                'controller' => 'city',
-                'params' => [
-                    'fc' => 'module',
-                    'module' => 'api_rest'
-                ]
-            ],
             'module-api_rest-stores' => [
                 'rule' => 'rest/front-office/stores{/:id}',
                 'keywords' => [
@@ -293,6 +282,33 @@ class APIRoutes
                 'rule' => 'rest/product-search',
                 'keywords' => [],
                 'controller' => 'productsearch',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-reset-password' => [
+                'rule' => 'rest/reset-password',
+                'keywords' => [],
+                'controller' => 'resetpassword',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-reset-password-end' => [
+                'rule' => 'rest/reset-password-end',
+                'keywords' => [],
+                'controller' => 'resetpasswordend',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-change-password' => [
+                'rule' => 'rest/change-password',
+                'keywords' => [],
+                'controller' => 'changepassword',
                 'params' => [
                     'fc' => 'module',
                     'module' => 'api_rest'

@@ -199,7 +199,10 @@ class RestController extends ModuleFrontController
                 return Validate::isFileName($value);
                 break;
             case 'password':
-                return Validate::isString($value);
+                return Validate::isPlaintextPassword($value);
+                break;
+            case 'url':
+                return Validate::isUrl($value);
                 break;
             case 'date':
                 return Validate::isDate($value);

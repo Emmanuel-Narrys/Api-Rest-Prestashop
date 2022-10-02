@@ -168,7 +168,7 @@ abstract class RestProductListingController extends ProductListingFrontControlle
                 return Validate::isFileName($value);
                 break;
             case 'password':
-                return Validate::isString($value);
+                return Validate::isPlaintextPassword($value);
                 break;
             default:
                 return true;

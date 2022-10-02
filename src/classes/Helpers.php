@@ -93,4 +93,21 @@ class Helpers
         $results = Product::getProducts(Context::getContext()->language->id, 0, 0, 'id_product', 'DESC', $id_category, true, Context::getContext());
         return count($results);
     }
+
+    public static function formatUrlWithParams (string $url, array $params = []):string
+    {
+        if(str_contains($url, '?')){
+            foreach($params as $key => $param){
+                $url += '&'.$key.'='.$param;
+            }
+        }else{
+            $url += '?';
+            $i = 0;
+            foreach($params as $key => $param){
+                $url += ($i == 0 ? '' : '&').$key.'='.$param;
+                $i++;
+            }
+        }
+        return $url;
+    }
 }

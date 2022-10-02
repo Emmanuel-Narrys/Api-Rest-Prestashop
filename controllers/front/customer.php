@@ -99,7 +99,6 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
 
     protected function processGetRequest()
     {
-        
         $customer = $this->context->customer;
         $id_lang = $this->context->language->id;
 
