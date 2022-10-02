@@ -158,7 +158,7 @@ class APIRoutes
                 ]
             ],
             'module-api_rest-stores-update' => [
-                'rule' => 'rest/front-office/update/stores{/:id}',
+                'rule' => 'rest/front-office/update/store{/:id}',
                 'keywords' => [
                     'id' => ['regexp' => '[_a-zA-Z0-9_-]+', 'param' => 'id']
                 ],
@@ -169,11 +169,130 @@ class APIRoutes
                 ]
             ],
             'module-api_rest-stores-delete' => [
-                'rule' => 'rest/front-office/delete/stores{/:id}',
+                'rule' => 'rest/front-office/delete/store{/:id}',
                 'keywords' => [
                     'id' => ['regexp' => '[_a-zA-Z0-9_-]+', 'param' => 'id']
                 ],
                 'controller' => 'adminstore_delete',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-stores-change-status' => [
+                'rule' => 'rest/front-office/change-status/store{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[_a-zA-Z0-9_-]+', 'param' => 'id']
+                ],
+                'controller' => 'adminstore_changestatus',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-products' => [
+                'rule' => 'rest/front-office/products{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[_a-zA-Z0-9_-]+', 'param' => 'id']
+                ],
+                'controller' => 'adminproduct',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-products-update' => [
+                'rule' => 'rest/front-office/update/product{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[_a-zA-Z0-9_-]+', 'param' => 'id']
+                ],
+                'controller' => 'adminproduct_update',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-products-delete' => [
+                'rule' => 'rest/front-office/delete/product{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[_a-zA-Z0-9_-]+', 'param' => 'id']
+                ],
+                'controller' => 'adminproduct_delete',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-products-change-status' => [
+                'rule' => 'rest/front-office/change-status/product{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[_a-zA-Z0-9_-]+', 'param' => 'id']
+                ],
+                'controller' => 'adminproduct_changestatus',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-products-image-delete' => [
+                'rule' => 'rest/front-office/delete/product-image{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[0-9]+', 'param' => 'id']
+                ],
+                'controller' => 'adminproductimages_delete',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-address-store' => [
+                'rule' => 'rest/front-office/address-store{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[0-9]+', 'param' => 'id']
+                ],
+                'controller' => 'adminaddress',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-address-store-update' => [
+                'rule' => 'rest/front-office/update/address-store{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[0-9]+', 'param' => 'id']
+                ],
+                'controller' => 'adminaddress_update',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-address-store-delete' => [
+                'rule' => 'rest/front-office/delete/address-store{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[0-9]+', 'param' => 'id']
+                ],
+                'controller' => 'adminaddress_delete',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-address-store-change-status' => [
+                'rule' => 'rest/front-office/change-status/address-store{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[0-9]+', 'param' => 'id']
+                ],
+                'controller' => 'adminaddress_changestatus',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-product-search' => [
+                'rule' => 'rest/product-search',
+                'keywords' => [],
+                'controller' => 'productsearch',
                 'params' => [
                     'fc' => 'module',
                     'module' => 'api_rest'

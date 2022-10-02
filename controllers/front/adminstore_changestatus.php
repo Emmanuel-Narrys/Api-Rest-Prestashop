@@ -3,7 +3,7 @@
 use NarrysTech\Api_Rest\controllers\AuthRestController;
 use Viaziza\Smalldeals\Classes\Boutique;
 
-class Api_RestAdminstore_deleteModuleFrontController extends AuthRestController
+class Api_RestAdminstore_changestatusModuleFrontController extends AuthRestController
 {
 
     public $params = [
@@ -48,28 +48,13 @@ class Api_RestAdminstore_deleteModuleFrontController extends AuthRestController
             }
         }
 
-        Boutique::attachCategories($store->id, []);
-        Boutique::attachAddresses($store->id, []);
-        Boutique::attachCurrencies($store->id, []);
-        Boutique::attachOpeningDays($store->id, []);
-        Boutique::attachSocialNetWorks($store->id, []);
-
-        $logo_filename = Boutique::getPathLogo(false) . DIRECTORY_SEPARATOR . $store->id . '.jpg';
-        if (file_exists($logo_filename)) {
-            unlink($logo_filename);
+        $store->active = !$store->active;
+        if (!$store->save()) {
+            $this->renderAjaxErrors($this->trans("The status of store has not been changed."));
         }
 
-        $image_filename = Boutique::getPathImage(false) . DIRECTORY_SEPARATOR . $store->id . '.jpg';
-        if (file_exists($image_filename)) {
-            unlink($image_filename);
-        }
-
-        if (!$store->delete()) {
-            $this->renderAjaxErrors($this->trans("The store has not been deleted."));
-        }
-
-        $this->datas['message'] = $this->trans("The store has been deleted.");
-        $this->datas['stores'] = Boutique::getFullStores($id_lang, $customer->id, false);
+        $this->datas['message'] = $this->trans("The status of store has been change.");
+        $this->datas['store'] = Boutique::getStore($store->id, $id_lang, false);
 
         $this->renderAjax();
         parent::processGetRequest();

@@ -6,6 +6,7 @@ use Viaziza\Smalldeals\Classes\Boutique;
 use Viaziza\Smalldeals\Classes\CategoryStore;
 use Viaziza\Smalldeals\Classes\OpeningDay;
 use Viaziza\Smalldeals\Classes\SocialNetworks;
+use Viaziza\Smalldeals\Classes\TypeStore;
 
 class Api_RestAdminstore_updateModuleFrontController extends AuthRestController
 {
@@ -19,26 +20,31 @@ class Api_RestAdminstore_updateModuleFrontController extends AuthRestController
                 'required' => true,
             ],
             [
+                'name' => 'id_sd_type_store',
+                'type' => 'number',
+                'required' => true,
+            ],
+            [
                 'name' => 'name',
                 'type' => 'text',
                 'required' => true,
             ],
-            [
+            /* [
                 'name' => 'slug',
                 'type' => 'text',
                 'required' => true,
-            ],
+            ], */
             [
                 'name' => 'meta_title',
                 'type' => 'text',
                 'required' => false,
                 'default' => ''
             ],
-            [
+            /* [
                 'name' => 'link_rewrite',
                 'type' => 'text',
                 'required' => true,
-            ],
+            ], */
             [
                 'name' => 'description',
                 'type' => 'text',
@@ -180,6 +186,12 @@ class Api_RestAdminstore_updateModuleFrontController extends AuthRestController
         }
 
         //Check if categories exist
+        $typestore = new TypeStore((int) $inputs['id_sd_type_store'], $id_lang);
+        if (!Validate::isLoadedObject($typestore)) {
+            $this->renderAjaxErrors($this->trans("Type store do not exist."));
+        }
+
+        //Check if categories exist
         foreach ($inputs['categories'] as $key => $id_category) {
             $cat = new CategoryStore((int) $id_category, $id_lang);
             if (!Validate::isLoadedObject($cat)) {
@@ -221,14 +233,16 @@ class Api_RestAdminstore_updateModuleFrontController extends AuthRestController
 
         $store->id_customer = $customer->id;
         $store->name = $inputs['name'];
-        $store->slug = $inputs['slug'];
+        $store->link_rewrite = Tools::link_rewrite($inputs['name']);
+        /* $store->slug = $inputs['slug']; */
         $store->meta_title = $inputs['meta_title'];
-        $store->link_rewrite = $inputs['link_rewrite'];
+        /* $store->link_rewrite = $inputs['link_rewrite']; */
         $store->description = $inputs['description'];
         $store->email = $inputs['email'];
         $store->web_site = $inputs['web_site'];
         $store->published = $inputs['published'];
         $store->active = $inputs['active'];
+        $store->id_sd_type_store = $inputs['id_sd_type_store'];
 
         if (!$store->save()) {
             $this->renderAjaxErrors($this->trans("The store has not been update."));
@@ -306,7 +320,7 @@ class Api_RestAdminstore_updateModuleFrontController extends AuthRestController
         }
 
         $this->datas['message'] = $this->trans("The store has been update.");
-        $this->datas['store'] = Boutique::getStore($store->id, $id_lang);
+        $this->datas['store'] = Boutique::getStore($store->id, $id_lang, false);
 
         $this->renderAjax();
         parent::processPostRequest();

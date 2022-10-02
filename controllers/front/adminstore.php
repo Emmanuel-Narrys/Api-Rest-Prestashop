@@ -6,6 +6,7 @@ use Viaziza\Smalldeals\Classes\Boutique;
 use Viaziza\Smalldeals\Classes\CategoryStore;
 use Viaziza\Smalldeals\Classes\OpeningDay;
 use Viaziza\Smalldeals\Classes\SocialNetworks;
+use Viaziza\Smalldeals\Classes\TypeStore;
 
 class Api_RestAdminstoreModuleFrontController extends AuthRestController
 {
@@ -59,7 +60,7 @@ class Api_RestAdminstoreModuleFrontController extends AuthRestController
             }
         }
 
-        $this->datas['stores'] = Boutique::getFullStores($id_lang ?? null, $customer->id);
+        $this->datas['stores'] = Boutique::getFullStores($id_lang ?? null, $customer->id, false);
 
         $this->renderAjax();
 
@@ -72,26 +73,36 @@ class Api_RestAdminstoreModuleFrontController extends AuthRestController
             'table' => 'Store',
             'fields' => [
                 [
+                    'name' => 'id_sd_type_store',
+                    'type' => 'number',
+                    'required' => true,
+                ],
+                [
                     'name' => 'name',
                     'type' => 'text',
                     'required' => true,
                 ],
                 [
-                    'name' => 'slug',
+                    'name' => 'name',
                     'type' => 'text',
                     'required' => true,
                 ],
+                /* [
+                    'name' => 'slug',
+                    'type' => 'text',
+                    'required' => true,
+                ], */
                 [
                     'name' => 'meta_title',
                     'type' => 'text',
                     'required' => false,
                     'default' => ''
                 ],
-                [
+                /* [
                     'name' => 'link_rewrite',
                     'type' => 'text',
                     'required' => true,
-                ],
+                ], */
                 [
                     'name' => 'description',
                     'type' => 'text',
@@ -203,6 +214,12 @@ class Api_RestAdminstoreModuleFrontController extends AuthRestController
         $id_lang = $this->context->language->id;
 
         //Check if categories exist
+        $typestore = new TypeStore((int) $inputs['id_sd_type_store'], $id_lang);
+        if (!Validate::isLoadedObject($typestore)) {
+            $this->renderAjaxErrors($this->trans("Type store do not exist."));
+        }
+
+        //Check if categories exist
         foreach ($inputs['categories'] as $key => $id_category) {
             $cat = new CategoryStore((int) $id_category, $id_lang);
             if (!Validate::isLoadedObject($cat)) {
@@ -215,6 +232,8 @@ class Api_RestAdminstoreModuleFrontController extends AuthRestController
             $add = new AddressStore((int) $id_address, $id_lang);
             if (!Validate::isLoadedObject($add)) {
                 $this->renderAjaxErrors($this->trans("Address id $id_address do not exist."));
+            } else if ($add->id_sd_store != 0) {
+                $this->renderAjaxErrors($this->trans("Address id $id_address is already used."));
             }
         }
 
@@ -245,14 +264,16 @@ class Api_RestAdminstoreModuleFrontController extends AuthRestController
         $store = new Boutique(null, $id_lang);
         $store->id_customer = $customer->id;
         $store->name = $inputs['name'];
-        $store->slug = $inputs['slug'];
+        $store->link_rewrite = Tools::link_rewrite($inputs['name']);
+        /* $store->slug = $inputs['slug']; */
         $store->meta_title = $inputs['meta_title'];
-        $store->link_rewrite = $inputs['link_rewrite'];
+        /* $store->link_rewrite = $inputs['link_rewrite']; */
         $store->description = $inputs['description'];
         $store->email = $inputs['email'];
         $store->web_site = $inputs['web_site'];
         $store->published = $inputs['published'];
         $store->active = $inputs['active'];
+        $store->id_sd_type_store = $inputs['id_sd_type_store'];
 
         if (!$store->save()) {
             $this->renderAjaxErrors($this->trans("The store has not been saved."));
@@ -320,7 +341,7 @@ class Api_RestAdminstoreModuleFrontController extends AuthRestController
         }
 
         $this->datas['message'] = $this->trans("The store has been saved.");
-        $this->datas['stores'] = Boutique::getFullStores($id_lang, $customer->id);
+        $this->datas['stores'] = Boutique::getFullStores($id_lang, $customer->id, false);
 
         $this->renderAjax();
         parent::processPostRequest();

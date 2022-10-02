@@ -67,13 +67,19 @@ class RESTProductLazyArray
      */
     private $hookManager;
 
+    /**
+     * @var ProductStore
+     */
+    private $productStore;
+
     public function __construct(
         ProductPresentationSettings $settings,
         array $product,
         Language $language,
         PriceFormatter $priceFormatter,
         ImageRetriever $imageRetriever,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        ProductStore $productStore = null
     ) {
         $this->settings = $settings;
         $this->product = $product;
@@ -82,27 +88,30 @@ class RESTProductLazyArray
         $this->imageRetriever = $imageRetriever;
         $this->translator = $translator;
         $this->hookManager = new HookManager();
+        $this->productStore = $productStore;
 
-        $this->fillImages(
-            $product,
-            $language
-        );
+        $exist = $this->addStore();
+        if ($exist) {
+            $this->fillImages(
+                $product,
+                $language
+            );
 
-        $this->addPriceInformation(
-            $settings,
-            $product
-        );
+            $this->addPriceInformation(
+                $settings,
+                $product
+            );
 
-        $this->addQuantityInformation(
-            $settings,
-            $product,
-            $language
-        );
+            $this->addQuantityInformation(
+                $settings,
+                $product,
+                $language
+            );
 
-        $this->getFlags();
+            $this->getFlags();
 
-        $this->addStore();
-        $this->addDateAgo();
+            $this->addDateAgo();
+        }
     }
 
     protected function addPriceInformation(
@@ -117,9 +126,9 @@ class RESTProductLazyArray
         $this->product['discount_amount_to_display'] = null;
 
         if ($settings->include_taxes) {
-            $price = $regular_price = $product['price'];
+            $price = $regular_price = $this->productStore ? $this->productStore->price : $product['price'];
         } else {
-            $price = $regular_price = $product['price_tax_exc'];
+            $price = $regular_price = $this->productStore ? $this->productStore->price : $product['price_tax_exc'];
         }
 
         if ($product['specific_prices']) {
@@ -481,35 +490,49 @@ class RESTProductLazyArray
     }
 
     //Add store into product
-    public function addStore(){
+    public function addStore()
+    {
         $id_lang = Context::getContext()->language->id;
-        $products_stores = ProductStore::getProductStores((int) $this->product['id_product'], null, $id_lang);
-        if(!empty($products_stores)){
-            $store = Boutique::getStore((int) $products_stores[0]->id_sd_store, $id_lang);
-        }else{
-            $store = null;
+        if ($this->productStore) {
+            $this->product['id_sd_store'] = $this->productStore->id_sd_store;
+            $this->product['quantity'] = $this->productStore->quantity;
+            $this->product['active'] = $this->productStore->active;
+            $this->product['show_price'] = $this->productStore->show_price;
+        } else {
+            $this->productStore = ProductStore::getProductStoreWithMinPrice((int)$this->product['id_product'], $id_lang);
+            if ($this->productStore) {
+                $this->product['id_sd_store'] = $this->productStore->id_sd_store;
+                $this->product['quantity'] = $this->productStore->quantity;
+                $this->product['active'] = $this->productStore->active;
+                $this->product['show_price'] = $this->productStore->show_price;
+            } else {
+                $this->product = [];
+                return false;
+            }
         }
-
+        $store = Boutique::getStore((int) $this->product['id_sd_store'], $id_lang);
         $this->product['store'] = $store;
+        return true;
     }
 
-    public function addDateAgo (){
+    public function addDateAgo()
+    {
         $now = new DateTime();
         $creat = new DateTime($this->product['date_add']);
         $diff = $now->diff($creat);
         $nb_day = $diff->days;
         $ago = "";
-        if($nb_day){
-            if ($nb_day > 7 && $nb_day <= 30){
+        if ($nb_day) {
+            if ($nb_day > 7 && $nb_day <= 30) {
                 $nb_week = floor($nb_day / 7);
                 $ago = "$nb_week semaines passé";
-            }else if ($nb_day > 30 && $nb_day <= 365){
+            } else if ($nb_day > 30 && $nb_day <= 365) {
                 $nb_month = floor($nb_day / 30);
                 $ago = "$nb_month mois passé";
-            }else if ($nb_day > 365){
+            } else if ($nb_day > 365) {
                 $nb_yesr = floor($nb_day / 365);
                 $ago = "$nb_yesr années passé";
-            }else {
+            } else {
                 $ago = "$nb_day jours passé";
             }
         }

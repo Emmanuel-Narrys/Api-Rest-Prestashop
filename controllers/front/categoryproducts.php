@@ -8,6 +8,7 @@ use PrestaShop\PrestaShop\Adapter\Entity\Category;
 use PrestaShop\PrestaShop\Adapter\Entity\Product;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
+use Viaziza\Smalldeals\Classes\ProductStore;
 
 class Api_RestCategoryproductsModuleFrontController extends RestProductListingController
 {
@@ -17,7 +18,17 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
         'fields' => [
             [
                 'name' => 'id',
-                'required' => true,
+                'required' => false,
+                'type' => 'text'
+            ],
+            [
+                'name' => 's',
+                'required' => false,
+                'type' => 'text'
+            ],
+            [
+                'name' => 'tag',
+                'required' => false,
                 'type' => 'text'
             ],
         ]
@@ -31,9 +42,40 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
     protected $category;
 
     protected $quantity_discounts = [];
+    
+    protected $search_string;
+    protected $search_tag;
 
     protected function processGetRequest()
     {
+        $this->params = [
+            'table' => 'category',
+            'fields' => [
+                [
+                    'name' => 'id',
+                    'required' => false,
+                    'type' => 'text',
+                    'default' => Category::getRootCategory()->id
+                ],
+                [
+                    'name' => 'id_sd_store',
+                    'required' => false,
+                    'type' => 'number',
+                    'default' => 0
+                ],
+                [
+                    'name' => 's',
+                    'required' => false,
+                    'type' => 'text'
+                ],
+                [
+                    'name' => 'tag',
+                    'required' => false,
+                    'type' => 'text'
+                ],
+            ]
+        ];
+
         $schema = Tools::getValue('schema');
         if ($schema && !is_null($schema)) {
             $this->datas = $this->params;
@@ -42,6 +84,9 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
 
         $inputs = $this->checkErrorsRequiredOrType();
         $id_category = $inputs['id'];
+        $id_sd_store = $inputs['id_sd_store'];
+        $this->search_string = $inputs['s'];
+        $this->search_tag = $inputs['tag'];
 
         if ((int) $id_category) {
             $id_category = (int) $id_category;
@@ -87,6 +132,15 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
         foreach ($productList as $key => $product) {
             $populated_product = (new ProductAssembler($this->context))
                 ->assembleProduct($product);
+                
+            if($id_sd_store){
+                $productStore = ProductStore::getProductStore((int)$product['id_product'], $id_sd_store);
+                if(!Validate::isLoadedObject($productStore)){
+                    $productStore = null;
+                }
+            }else{
+                $productStore = null;
+            }
 
             $lazy_product = new RESTProductLazyArray(
                 $settings,
@@ -94,7 +148,8 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
                 $this->context->language,
                 new PriceFormatter(),
                 $retriever,
-                $this->context->getTranslator()
+                $this->context->getTranslator(),
+                $productStore 
             );
 
             $productList[$key] = $lazy_product->getProduct();

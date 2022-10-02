@@ -99,6 +99,7 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
 
     protected function processGetRequest()
     {
+        
         $customer = $this->context->customer;
         $id_lang = $this->context->language->id;
 
@@ -178,10 +179,111 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
 
     protected function processPutRequest()
     {
-        $inputs = $this->checkErrorsRequiredOrType();
-
+        
         $customer = $this->context->customer;
         $id_lang = $this->context->language->id;
+
+        $this->params = [
+            'table' => 'Customer',
+            'fields' => [
+                /* [
+                    'name' => 'id_customer',
+                    'type' => 'number',
+                    'required' => true,
+                ], */
+                [
+                    'name' => 'id_gender',
+                    'type' => 'number',
+                    'required' => true,
+                    'datas' => Gender::getGenders($id_lang)->getResults()
+                ],
+                [
+                    'name' => 'id_country',
+                    'type' => 'number',
+                    'required' => true,
+                    'datas' => Country::getCountries($id_lang, true)
+                ],
+                [
+                    'name' => 'id_state',
+                    'type' => 'number',
+                    'required' => true,
+                    'datas' => State::getStates($id_lang, true)
+                ],
+                [
+                    'name' => 'id_city',
+                    'type' => 'number',
+                    'required' => false,
+                    'default' => false,
+                    'datas' => City::getFullCities($id_lang)
+                ],
+                [
+                    'name' => 'firstname',
+                    'type' => 'text',
+                    'required' => true,
+                ],
+                [
+                    'name' => 'lastname',
+                    'type' => 'text',
+                    'required' => true,
+                ],
+                [
+                    'name' => 'email',
+                    'type' => 'text',
+                    'required' => true,
+                ],
+                [
+                    'name' => 'birthday',
+                    'type' => 'date',
+                    'required' => true,
+                ],
+                [
+                    'name' => 'city',
+                    'type' => 'text',
+                    'required' => false,
+                    'default' => false
+                ],
+                [
+                    'name' => 'phone',
+                    'type' => 'text',
+                    'required' => true,
+                ],
+                [
+                    'name' => 'phone_mobile',
+                    'type' => 'text',
+                    'required' => true,
+                ],
+                [
+                    'name' => 'website',
+                    'type' => 'text',
+                    'required' => false,
+                    'default' => false
+                ],
+                [
+                    'name' => 'address1',
+                    'type' => 'text',
+                    'required' => true,
+                ],
+                [
+                    'name' => 'address2',
+                    'type' => 'text',
+                    'required' => false,
+                    'default' => false
+                ],
+                [
+                    'name' => 'postcode',
+                    'type' => 'text',
+                    'required' => false,
+                    'default' => false
+                ],
+            ]
+        ];
+
+        if(Tools::getValue('schema', false)){
+            $this->datas = $this->params;
+            $this->renderAjax();
+        }
+        
+        $inputs = $this->checkErrorsRequiredOrType();
 
         //Update Customer
         $customer->firstname = $inputs['firstname'];

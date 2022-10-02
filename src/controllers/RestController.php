@@ -35,6 +35,7 @@ use PrestaShop\PrestaShop\Core\Product\ProductPresentationSettings;
 use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchContext;
 use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchQuery;
 use PrestaShop\PrestaShop\Core\Product\Search\SortOrder;
+use Viaziza\Smalldeals\Classes\ProductStore;
 
 define('PRICE_REDUCTION_TYPE_PERCENT', 'percentage');
 class RestController extends ModuleFrontController
@@ -94,6 +95,13 @@ class RestController extends ModuleFrontController
      * @var integer
      */
     public $codeAuthenticateCustomer = 402;
+
+    /**
+     * Product
+     *
+     * @var Product
+     */
+    protected $product;
 
     protected $img1 = 'large';
     protected $img2 = 'medium';
@@ -165,7 +173,6 @@ class RestController extends ModuleFrontController
         ], $this->codeMethod, false));
         die;
     }
-
     
     /**
      * Undocumented function
@@ -238,7 +245,7 @@ class RestController extends ModuleFrontController
                 $this->errors["type"][] = $a;
             }
             //If field is not required and if not submit
-            if ($required === false && (($value == false || is_null($value)))) {
+            if ($required === false && (($value === false || is_null($value)))) {
                 $value = isset($a["default"]) ? $a["default"] : "null";
             }
 
@@ -303,6 +310,85 @@ class RestController extends ModuleFrontController
             $extension = ($value && !empty($value)) ? pathinfo($value['name'], PATHINFO_EXTENSION) : "";
             if(!in_array($extension, $extensions) && ($required === true) && ($value && !empty($value))){
                 $this->errors['extensions'][] = $a;
+            }
+
+            $inputs[$name] = $value;
+        }
+
+        //If has errors required
+        if (isset($this->errors["required"]) && !empty($this->errors["required"])) {
+            $errors = [];
+            $errors["message"] = $this->getTranslator()->trans("Fields is required!");
+            foreach ($this->errors["required"] as $field) {
+                $errors["fields"][] = $field["name"];
+            }
+            $this->datas["errors"] = $errors;
+            $this->renderAjax($this->codeErrors, false);
+        }
+
+        //If has errors extensions
+        if (isset($this->errors["extensions"]) && !empty($this->errors["extensions"])) {
+            $errors = [];
+            $errors["message"] = $this->getTranslator()->trans("Extention is not correct!");
+            foreach ($this->errors["extensions"] as $field) {
+                $errors["fields"][$field["name"]] = isset($_FILES[$field['name']]) ? $_FILES[$field['name']] : false;
+            }
+            $this->datas["errors"] = $errors;
+            $this->renderAjax($this->codeErrors, false);
+        }
+
+        return $inputs;
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @return array
+     */
+    public function checkProductImagesErrorsRequiredOrType(): array
+    {
+        $inputs = array();
+
+        foreach ($this->params['images_files_field'] as $key => $a) {
+            //Get Name
+            $name = $a['name'];
+            //Get Required
+            $required = (bool) $a['required'];
+            //Get Type
+            $type = $a['type'];
+            //Get Value
+            $value = $_FILES;
+            $new_value = [];
+            foreach ($value as $key => $v) {
+                if($key == 'cover'){
+                    continue;
+                }
+                $new_value[$key] = $v;
+            }
+            $value = $new_value;
+            //Get Extentions
+            $extensions = $a['extensions'];
+
+            //Field is required and null
+            if (($required === true) && (($value == false || is_null($value) || empty($value)))) {
+                $this->errors["required"][] = $a;
+            }
+            //Field type if not valide
+            if (($required === true) && $this->isValideType($type, $value) == false) {
+                $this->errors["type"][] = $a;
+            }
+            //If field is not required and if not submit
+            if ($required === false && (($value == false || is_null($value) || empty($value)))) {
+                $value = isset($a["default"]) ? $a["default"] : [];
+            }
+
+            if($value && !empty($value)){
+                foreach($value as $key => $v){
+                    $extension = pathinfo($v['name'], PATHINFO_EXTENSION);
+                    if(!in_array($extension, $extensions) && ($required === true) && ($v && !empty($v))){
+                        $this->errors['extensions'][] = $a;
+                    }
+                }
             }
 
             $inputs[$name] = $value;
@@ -613,6 +699,43 @@ class RestController extends ModuleFrontController
         return $product;
     }
 
+    public function getFullProduct(int $id_product, int $id_lang = null, ProductStore $productStore = null){
+
+        $this->product = new Product($id_product, true, $id_lang);
+
+        $product = $this->getTemplateVarProduct($productStore);
+        if(empty($product)){
+            return $product;
+        }
+
+        $product['groups'] = $this->assignAttributesGroups($product);
+
+        //Get products accessory with this product
+        $product['accessories'] = $this->product->getAccessories($this->context->language->id);
+        $retriever = new ImageRetriever(
+            $this->context->link
+        );
+        $settings = $this->getProductPresentationSettings();
+        foreach ($product['accessories'] as $key => $p) {
+            $populated_product = (new ProductAssembler($this->context))
+                ->assembleProduct($p);
+
+            $lazy_product = new RESTProductLazyArray(
+                $settings,
+                $populated_product,
+                $this->context->language,
+                new PriceFormatter(),
+                $retriever,
+                $this->context->getTranslator(),
+                $productStore
+            );
+
+            $product['accessories'][$key] = $lazy_product->getProduct();
+        }
+
+        return $product;
+    }
+
     private function fillImages(
         array $product,
         Language $language
@@ -905,7 +1028,7 @@ class RestController extends ModuleFrontController
         return $presentedPackItems;
     }
 
-    public function getTemplateVarProduct()
+    public function getTemplateVarProduct(ProductStore $productStore = null)
     {
         $factory = new ProductPresenterFactory($this->context, new TaxConfiguration());
         $productSettings = $factory->getPresentationSettings();
@@ -944,15 +1067,11 @@ class RestController extends ModuleFrontController
         $id_product = (int)$this->product->id;
         $id_shop = $this->context->shop->id;
 
-
         $quantity_discounts = SpecificPrice::getQuantityDiscounts($id_product, $id_shop, $id_currency, $id_country, $id_group, $id_product_attribute, false, (int)$this->context->customer->id);
-
 
         $tax = (float)$this->product->getTaxesRate(new Address((int)$this->context->cart->{Configuration::get('PS_TAX_ADDRESS_TYPE')}));
 
-
         $this->quantity_discounts = $this->formatQuantityDiscounts($quantity_discounts, $product_price, (float)$tax, $this->product->ecotax);
-
 
         $product_full['quantity_label'] = ($this->product->quantity > 1) ? $this->trans('Items', array(), 'Shop.Theme.Catalog') : $this->trans('Item', array(), 'Shop.Theme.Catalog');
         $product_full['quantity_discounts'] = $this->quantity_discounts;
@@ -978,7 +1097,8 @@ class RestController extends ModuleFrontController
             $this->context->language,
             new PriceFormatter(),
             new ImageRetriever($this->context->link),
-            $this->context->getTranslator()
+            $this->context->getTranslator(),
+            $productStore
         );
         return $lazy_product->getProduct();
 
@@ -1563,4 +1683,5 @@ class RestController extends ModuleFrontController
         $rout_category  = Category::getRootCategory($this->context->language->id);
         return $this->getTemplateVarSubCategories($rout_category);
     }
+
 }

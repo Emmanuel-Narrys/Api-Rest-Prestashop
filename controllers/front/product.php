@@ -5,6 +5,7 @@ use NarrysTech\Api_Rest\controllers\RestController;
 use PrestaShop\PrestaShop\Adapter\Entity\Product;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
+use Viaziza\Smalldeals\Classes\ProductStore;
 
 class Api_RestProductModuleFrontController extends RestController
 {
@@ -19,6 +20,12 @@ class Api_RestProductModuleFrontController extends RestController
             ],
             [
                 'name' => 'id_product_attribute',
+                'required' => false,
+                'type' => 'number',
+                'default' => 0
+            ],
+            [
+                'name' => 'id_sd_store',
                 'required' => false,
                 'type' => 'number',
                 'default' => 0
@@ -45,6 +52,7 @@ class Api_RestProductModuleFrontController extends RestController
 
         $inputs = $this->checkErrorsRequiredOrType();
         $id_product = $inputs['id'];
+        $id_sd_store = $inputs['id_sd_store'];
 
         if ((int) $id_product) {
             $id_product = (int) $id_product;
@@ -68,30 +76,19 @@ class Api_RestProductModuleFrontController extends RestController
             $this->renderAjaxErrors($this->trans('This product is not enable.', [], 'Shop.Notifications.Warning'));
         }
 
-        $product = $this->getTemplateVarProduct();
+        if ($id_sd_store) {
+            $productStore = ProductStore::getProductStore($this->product->id, $id_sd_store, $this->context->language->id);
+            if (Validate::isLoadedObject($productStore)) {
+                $product = $this->getFullProduct($this->product->id, $this->context->language->id, $productStore);
+            } else {
+                $product = $this->getFullProduct($this->product->id, $this->context->language->id);
+            }
+        } else {
+            $product = $this->getFullProduct($this->product->id, $this->context->language->id);
+        }
 
-        $product['groups'] = $this->assignAttributesGroups($product);
-
-        //Get products accessory with this product
-        $product['accessories'] = $this->product->getAccessories($this->context->language->id);
-        $retriever = new ImageRetriever(
-            $this->context->link
-        );
-        $settings = $this->getProductPresentationSettings();
-        foreach ($product['accessories'] as $key => $p) {
-            $populated_product = (new ProductAssembler($this->context))
-                ->assembleProduct($p);
-
-            $lazy_product = new RESTProductLazyArray(
-                $settings,
-                $populated_product,
-                $this->context->language,
-                new PriceFormatter(),
-                $retriever,
-                $this->context->getTranslator()
-            );
-
-            $product['accessories'][$key] = $lazy_product->getProduct();
+        if (empty($product)) {
+            $this->renderAjaxErrors($this->trans('This product is no longer available.', [], 'Shop.Notifications.Error'));
         }
 
         $this->datas['product'] = $product;
