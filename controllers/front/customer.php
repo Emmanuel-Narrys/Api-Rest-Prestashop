@@ -9,11 +9,6 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
     public $params = [
         'table' => 'Customer',
         'fields' => [
-            /* [
-                'name' => 'id_customer',
-                'type' => 'number',
-                'required' => true,
-            ], */
             [
                 'name' => 'id_gender',
                 'type' => 'number',
@@ -176,7 +171,7 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
         parent::processGetRequest();
     }
 
-    protected function processPutRequest()
+    protected function processPostRequest()
     {
         
         $customer = $this->context->customer;
@@ -185,11 +180,6 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
         $this->params = [
             'table' => 'Customer',
             'fields' => [
-                /* [
-                    'name' => 'id_customer',
-                    'type' => 'number',
-                    'required' => true,
-                ], */
                 [
                     'name' => 'id_gender',
                     'type' => 'number',
@@ -234,6 +224,7 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
                     'name' => 'birthday',
                     'type' => 'date',
                     'required' => true,
+                    'format' => 'yyyy-mm-dd'
                 ],
                 [
                     'name' => 'city',
@@ -339,6 +330,7 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
             $city = null;
         }
 
+        $this->datas['message'] = $this->trans("The customer informations has been update.");
         $this->datas['customer'] = array_merge([
             'id_customer' => $customer->id,
             'username' => $customer->username,
@@ -382,6 +374,6 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
         ]);
 
         $this->renderAjax();
-        parent::processPutRequest();
+        parent::processPostRequest();
     }
 }

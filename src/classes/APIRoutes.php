@@ -306,9 +306,18 @@ class APIRoutes
                 ]
             ],
             'module-api_rest-change-password' => [
-                'rule' => 'rest/change-password',
+                'rule' => 'rest/front-office/change-password',
                 'keywords' => [],
                 'controller' => 'changepassword',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-email-subscription' => [
+                'rule' => 'rest/email-subscription',
+                'keywords' => [],
+                'controller' => 'emailsubscription',
                 'params' => [
                     'fc' => 'module',
                     'module' => 'api_rest'

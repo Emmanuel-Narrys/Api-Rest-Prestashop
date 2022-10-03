@@ -18,7 +18,7 @@ class Api_RestBootstrapModuleFrontController extends RestController
         if(!Module::isEnabled('ps_featuredproducts')){
             $this->renderAjaxErrors($this->trans("Module 'ps_featuredproducts' is not install."), $this->codeServeur);
         }
-
+        
         $ps_imageslider = Module::getInstanceByName('ps_imageslider');
         $this->datas = array_merge($this->datas, $ps_imageslider->getWidgetVariables(null, []));
 
@@ -32,8 +32,10 @@ class Api_RestBootstrapModuleFrontController extends RestController
         $this->datas['number_of_customers'] = Helpers::getNbCustomer();
         $this->datas['number_of_categories'] = Helpers::getNbCategory();
 
-        $ps_contactinfo = Module::getInstanceByName('ps_contactinfo');
-        $this->datas = array_merge($this->datas, $ps_contactinfo->getWidgetVariables(null, []));
+        $this->datas['shop'] = $this->getTemplateVarShop();
+
+        /* $ps_contactinfo = Module::getInstanceByName('ps_contactinfo');
+        $this->datas = array_merge($this->datas, $ps_contactinfo->getWidgetVariables(null, [])); */
 
         $this->renderAjax();
         parent::processGetRequest();

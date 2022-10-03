@@ -30,7 +30,7 @@ class Api_RestResetpasswordModuleFrontController extends RestController
         }
 
         $inputs = $this->checkErrorsRequiredOrType();
-
+        
         if (!Validate::isEmail($inputs["email"])) {
             $email = Helpers::getEmailByUsername($inputs["email"]);
             if ($email != false) {
@@ -42,7 +42,7 @@ class Api_RestResetpasswordModuleFrontController extends RestController
             }
         }
 
-        if (!($email = $this->IDNConverter->emailToUtf8(trim($inputs['email']))) || !Validate::isEmail($inputs['email'])) {
+        if (!($email = trim($inputs['email'])) || !Validate::isEmail($inputs['email'])) {
             $this->renderAjaxErrors($this->trans('Invalid email address.', [], 'Shop.Notifications.Error'));
         }
         $customer = new Customer();

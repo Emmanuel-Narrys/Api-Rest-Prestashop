@@ -98,13 +98,13 @@ class Helpers
     {
         if(str_contains($url, '?')){
             foreach($params as $key => $param){
-                $url += '&'.$key.'='.$param;
+                $url .= '&'.$key.'='.$param;
             }
         }else{
-            $url += '?';
+            $url .= '?';
             $i = 0;
             foreach($params as $key => $param){
-                $url += ($i == 0 ? '' : '&').$key.'='.$param;
+                $url .= ($i == 0 ? '' : '&').$key.'='.$param;
                 $i++;
             }
         }

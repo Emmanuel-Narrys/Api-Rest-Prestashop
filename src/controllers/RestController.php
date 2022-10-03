@@ -240,7 +240,7 @@ class RestController extends ModuleFrontController
             }
 
             //Field is required and null
-            if (($required === true) && (($value == false || is_null($value)))) {
+            if (($required === true) && (($value === false || is_null($value)))) {
                 $this->errors["required"][] = $a;
             }
             //Field type if not valide
