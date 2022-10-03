@@ -80,25 +80,26 @@ class Api_RestLoginModuleFrontController extends RestController
                 $inputs
             );
 
-            if ($login_form->submit()) {
-                $customer = $this->context->customer;
-                if ($customer->isLogged()) {
-                    $this->datas["is_logged"] = $customer->isLogged();
-                    $this->datas["session_token"] = $this->context->cookie->getAll()["session_token"];
-                    $this->datas["customer"] = [
-                        "id" => $customer->id,
-                        "id_gender" => $customer->id_gender,
-                        "id_lang" => $customer->id_lang,
-                        "username" => $customer->username,
-                        "email" => $customer->email,
-                        "sponsorship_code" => $customer->sponsorship_code
-                    ];
-                    $this->datas["id_cart"] = $this->context->cart->id;
-                }
+            if (!$login_form->submit()) {
+                $this->renderAjaxErrors($this->translator->trans('Authentication failed.', [], 'Shop.Notifications.Error'));
+            }
+
+            $customer = $this->context->customer;
+            if ($customer->isLogged()) {
+                $this->datas["is_logged"] = $customer->isLogged();
+                $this->datas["session_token"] = $this->context->cookie->getAll()["session_token"];
+                $this->datas["customer"] = [
+                    "id" => $customer->id,
+                    "id_gender" => $customer->id_gender,
+                    "id_lang" => $customer->id_lang,
+                    "username" => $customer->username,
+                    "email" => $customer->email,
+                    "sponsorship_code" => $customer->sponsorship_code
+                ];
+                $this->datas["id_cart"] = $this->context->cart->id;
             }
 
             $this->renderAjax();
-
         } catch (\Exception $e) {
             $this->renderAjaxErrors($e->getMessage());
         }
