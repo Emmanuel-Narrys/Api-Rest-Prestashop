@@ -78,7 +78,7 @@ class Helpers
 
     public static function getNbProduct():int
     {
-        $results = Product::getProducts(Context::getContext()->language->id, 0, 0, 'id_product', 'DESC', false, true);
+        $results = Product::getProducts(Context::getContext()->language->id, 0, 0, 'id_product', 'DESC', false, true, null, true);
         return count($results);
     }
 
@@ -90,7 +90,7 @@ class Helpers
     
     public static function getNbProductsToCategory(int $id_category): int
     {
-        $results = Product::getProducts(Context::getContext()->language->id, 0, 0, 'id_product', 'DESC', $id_category, true, Context::getContext());
+        $results = Product::getProducts(Context::getContext()->language->id, 0, 0, 'id_product', 'DESC', $id_category, true, Context::getContext(), true);
         return count($results);
     }
 
