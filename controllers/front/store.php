@@ -4,6 +4,7 @@ use NarrysTech\Api_Rest\controllers\RestController;
 use PrestaShop\PrestaShop\Adapter\Entity\Tools;
 use PrestaShop\PrestaShop\Adapter\Entity\Validate;
 use Viaziza\Smalldeals\Classes\Boutique;
+use Viaziza\Smalldeals\Classes\TypeStore;
 
 class Api_RestStoreModuleFrontController extends RestController
 {
@@ -22,18 +23,13 @@ class Api_RestStoreModuleFrontController extends RestController
                 "type" => "text",
                 'default' => 0
             ],
-            /* 
             [
-                "name" => "password",
-                "required" => true,
-                "type" => "password"
-            ],
-            [
-                "name" => "remember",
+                "name" => "id_type_store",
                 "required" => false,
                 "type" => "number",
-                "default" => 0
-            ], */]
+                'default' => 0
+            ],
+        ]
     ];
 
     /**
@@ -44,11 +40,32 @@ class Api_RestStoreModuleFrontController extends RestController
     protected function processGetRequest()
     {
 
+        $id_lang = $this->context->language->id;
+
         $schema = Tools::getValue('schema');
+        $this->params = [
+            "table" => 'stores',
+            "fields" => [
+                [
+                    "name" => "id",
+                    "required" => false,
+                    "type" => "text",
+                    'default' => 0
+                ],
+                [
+                    "name" => "id_type_store",
+                    "required" => false,
+                    "type" => "number",
+                    'default' => 0,
+                    "data" => TypeStore::getTypeStores($id_lang)
+                ],
+            ]
+        ];
+
         $inputs = $this->checkErrorsRequiredOrType();
         $id_store = $inputs['id'];
-
-        $id_lang = $this->context->language->id;
+        $id_type_store = (int) $inputs['id_type_store'];
+        $id_type_store = ($id_type_store && !is_null($id_type_store)) ? $id_type_store : null;
 
         if ($schema && !is_null($schema)) {
             $this->datas = $this->params;
@@ -78,7 +95,7 @@ class Api_RestStoreModuleFrontController extends RestController
             }
         }
 
-        $this->datas['stores'] = Boutique::getFullStores($id_lang?? null);
+        $this->datas['stores'] = Boutique::getFullStores($id_lang ?? null, null, true, $id_type_store);
         $this->renderAjax();
 
         parent::processGetRequest();
