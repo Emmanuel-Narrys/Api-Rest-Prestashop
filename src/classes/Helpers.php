@@ -165,7 +165,8 @@ class Helpers
         $scope = urlencode("https://www.googleapis.com/auth/youtube.upload");
         $client_id = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_ID");
         $response_type = "code";
-        $access_type = "offline";
+        $access_type = "online";
+        $include_granted_scopes = "true";
         $redirect_uri = urlencode($redirect_uri);
 
         $new_url = $url."scope=$scope";
@@ -173,6 +174,7 @@ class Helpers
         $new_url.="&redirect_uri=$redirect_uri";
         $new_url.="&response_type=$response_type";
         $new_url.="&client_id=$client_id";
+        $new_url.="&include_granted_scopes=$include_granted_scopes";
 
         return $new_url;
     }
