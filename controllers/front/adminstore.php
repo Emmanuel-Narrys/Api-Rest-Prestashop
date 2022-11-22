@@ -69,6 +69,9 @@ class Api_RestAdminstoreModuleFrontController extends AuthRestController
 
     protected function processPostRequest()
     {
+        $id_lang = $this->context->language->id;
+        $customer = $this->context->customer;
+
         $this->params = [
             'table' => 'Store',
             'fields' => [
@@ -76,6 +79,7 @@ class Api_RestAdminstoreModuleFrontController extends AuthRestController
                     'name' => 'id_sd_type_store',
                     'type' => 'number',
                     'required' => true,
+                    "data" => TypeStore::getTypeStores($id_lang)
                 ],
                 [
                     'name' => 'name',
@@ -136,18 +140,21 @@ class Api_RestAdminstoreModuleFrontController extends AuthRestController
                     'type' => 'array',
                     'required' => true,
                     'exemple' => [1, 2, 3, 4, 5],
+                    "data" => CategoryStore::getCategoryStore($id_lang)
                 ],
                 [
                     'name' => 'addresses',
                     'type' => 'array',
                     'required' => true,
                     'exemple' => [1, 2, 3, 4, 5],
+                    "data" => AddressStore::getAddressStores($id_lang, $customer->id, null, false)
                 ],
                 [
                     'name' => 'currencies',
                     'type' => 'array',
                     'required' => true,
                     'exemple' => [1, 2, 3, 4, 5],
+                    "data" => Currency::getCurrencies(true)
                 ],
                 [
                     'name' => 'opening_days',
@@ -165,7 +172,8 @@ class Api_RestAdminstoreModuleFrontController extends AuthRestController
                             'to' => '16h00'
                         ],
                     ],
-                    'default' => []
+                    'default' => [],
+                    "data" => OpeningDay::getOpeningDays($id_lang)
                 ],
                 [
                     'name' => 'social_networks',
@@ -181,7 +189,8 @@ class Api_RestAdminstoreModuleFrontController extends AuthRestController
                             'link' => 'https://m.linkedin.com/nom-de-mon-profil',
                         ],
                     ],
-                    'default' => []
+                    'default' => [],
+                    "data" => SocialNetworks::getSocialNetworks($id_lang)
                 ],
             ],
             "files_fields" => [
@@ -206,12 +215,16 @@ class Api_RestAdminstoreModuleFrontController extends AuthRestController
             ]
         ];
 
+        $schema = Tools::getValue('schema');
+        if ($schema && !is_null($schema)) {
+            $this->datas = $this->params;
+            $this->renderAjax();
+        }
+
         $inputs_1 = $this->checkErrorsRequiredOrType();
         $inputs_2 = $this->checkFilesErrorsRequiredOrType();
         $inputs = array_merge($inputs_1, $inputs_2);
 
-        $customer = $this->context->customer;
-        $id_lang = $this->context->language->id;
 
         //Check if categories exist
         $typestore = new TypeStore((int) $inputs['id_sd_type_store'], $id_lang);
