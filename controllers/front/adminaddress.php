@@ -62,7 +62,7 @@ class Api_RestAdminaddressModuleFrontController extends AuthRestController
                     'name' => 'id_country',
                     'type' => 'number',
                     'required' => true,
-                    'datas' => Country::getCountries($id_lang, true)
+                    'datas' => Country::getCountriesWithState($id_lang, true)
                 ],
                 [
                     'name' => 'id_state',
