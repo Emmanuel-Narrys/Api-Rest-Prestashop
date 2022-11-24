@@ -110,15 +110,28 @@ class Api_RestRegisterModuleFrontController extends RestController
             $inputs = $this->checkErrorsRequiredOrType();
 
             $customers = Customer::getCustomersByEmail($inputs["email"]);
-            if(!empty($customers)){
+            if (!empty($customers)) {
                 $this->renderAjaxErrors(
-                    $this->getTranslator()->trans("This username or email exists.")
+                    $this->getTranslator()->trans("This email exists.")
                 );
             }
 
-            if($inputs["sponsorship_code"] != null){
+            if (!Helpers::validateUsername($inputs["username"])) {
+                $this->renderAjaxErrors(
+                    $this->getTranslator()->trans("This username is not correct.")
+                );
+            }
+
+            $email = Helpers::getEmailByUsername($inputs["username"]);
+            if ($email == false) {
+                $this->renderAjaxErrors(
+                    $this->getTranslator()->trans("This username exists.")
+                );
+            }
+
+            if ($inputs["sponsorship_code"] != null) {
                 $id_sponsorship = self::getIdCustomerWithSponsorshipCode($inputs["sponsorship_code"]);
-                if($id_sponsorship){
+                if ($id_sponsorship) {
                     $inputs["id_sponsorship"] = $id_sponsorship;
                 }
             }
@@ -175,13 +188,13 @@ class Api_RestRegisterModuleFrontController extends RestController
     {
         $q = new DbQuery();
         $q->select("a.*")
-        ->from("customer", "a")
-        ->where("a.sponsorship_code = '$sponsorship_code'");
+            ->from("customer", "a")
+            ->where("a.sponsorship_code = '$sponsorship_code'");
 
         $customer = Db::getInstance()->executeS($q, false)->fetch(PDO::FETCH_OBJ);
-        if(empty($customer) || is_null($customer)){
+        if (empty($customer) || is_null($customer)) {
             return false;
-        }else {
+        } else {
             return $customer->id_customer;
         }
     }

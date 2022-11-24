@@ -1,5 +1,6 @@
 <?php
 
+use NarrysTech\Api_Rest\classes\Helpers;
 use NarrysTech\Api_Rest\controllers\AuthRestController;
 use Viaziza\Smalldeals\Classes\City;
 
@@ -221,6 +222,11 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
                     'required' => true,
                 ],
                 [
+                    'name' => 'username',
+                    'type' => 'text',
+                    'required' => true,
+                ],
+                [
                     'name' => 'birthday',
                     'type' => 'date',
                     'required' => true,
@@ -274,6 +280,12 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
         }
         
         $inputs = $this->checkErrorsRequiredOrType();
+
+        if(!Helpers::validateUsername($inputs["username"])){
+            $this->renderAjaxErrors(
+                $this->getTranslator()->trans("This username is not correct.")
+            );
+        }
 
         //Update Customer
         $customer->firstname = $inputs['firstname'];

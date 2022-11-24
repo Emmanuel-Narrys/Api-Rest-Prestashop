@@ -13,6 +13,7 @@ class Api_RestResetpasswordModuleFrontController extends RestController
                 'name' => 'email',
                 'type' => 'text',
                 'required' => true,
+                "message" => "username or email"
             ],
             [
                 'name' => 'url',
@@ -30,14 +31,21 @@ class Api_RestResetpasswordModuleFrontController extends RestController
         }
 
         $inputs = $this->checkErrorsRequiredOrType();
-        
+
         if (!Validate::isEmail($inputs["email"])) {
+
+            if (!Helpers::validateUsername($inputs["email"])) {
+                $this->renderAjaxErrors(
+                    $this->getTranslator()->trans("This username is not correct.")
+                );
+            }
+
             $email = Helpers::getEmailByUsername($inputs["email"]);
             if ($email != false) {
                 $inputs['email'] = $email;
             } else {
                 $this->renderAjaxErrors(
-                    $this->getTranslator()->trans("Username is not correct.")
+                    $this->getTranslator()->trans("This username is not correct.")
                 );
             }
         }
