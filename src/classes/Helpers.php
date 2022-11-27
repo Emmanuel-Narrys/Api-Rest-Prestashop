@@ -3,15 +3,20 @@
 namespace NarrysTech\Api_Rest\classes;
 
 use Configuration;
+use DbQuery;
 use Exception;
 use PrestaShop\PrestaShop\Adapter\Entity\Category;
 use PrestaShop\PrestaShop\Adapter\Entity\Context;
 use PrestaShop\PrestaShop\Adapter\Entity\Customer;
 use PrestaShop\PrestaShop\Adapter\Entity\Db;
 use PrestaShop\PrestaShop\Adapter\Entity\Product;
+use stdClass;
 
 class Helpers
 {
+    const FB_APP_ID = "276908837493377"; //id de l'app small-deals sur fb
+    const FB_ROOT = "https://graph.facebook.com/v13.0/276908837493377";
+    const FB_TOKEN = "EABEMb6n9EuYBAPhZCZBHPwARq8pWOY76sKWvkqWhCRX7cacG3OakqVaVxib6toDm1ThXxZAIdHzGqwgeqNZBMAT1LFpRqsYa8LqerfURt5wKLazCKJ555ZBZCIZB29aDNHrUV75Ln84lHxiO0L5RY1q4qZAR5TZBl3Hjuv65hgtm8hOJ1Nih8a3ZCt";
 
     public static function response_json($datas = [], int $status = 200, bool $success = true): string
     {
@@ -71,7 +76,7 @@ class Helpers
     {
         $allowed = array(".", "-", "_"); // you can add here more value, you want to allow.
         if (ctype_alnum(str_replace($allowed, '', $username))) {
-            if(is_numeric($username)){
+            if (is_numeric($username)) {
                 return false;
             }
             return true;
@@ -255,5 +260,186 @@ class Helpers
         $new_url .= "&client_secret=$client_secret";
 
         return self::request($new_url, true, [], $token);
+    }
+
+    public static function uploadImageToFacebook(string $url_image)
+    {
+        try {
+            $curl = curl_init();
+            $cUR = self::FB_ROOT . "/photos?published=false&url=$url_image&access_token=" . self::FB_TOKEN;
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => $cUR,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_HTTPHEADER => array(
+                    "access_token: " . self::FB_TOKEN
+                ),
+            ));
+
+            $response = curl_exec($curl);
+
+            curl_close($curl);
+            $obj = json_decode($response);
+            $id = isset($obj->id) ? $obj->id : -1;
+
+            return $id;
+        } catch (Exception $th) {
+            return -1;
+        }
+    }
+
+    public static function postListingToFacebook(string $message, array $images)
+    {
+        try {
+            $data = new stdClass();
+            $message = strip_tags($message);
+            $data->message = "$message";
+            $data->attached_media = array();
+
+            if (sizeof($images) > 0) {
+                foreach ($images as $image) {
+                    $id = self::uploadImageToFacebook($image);
+                    if ($id != -1) {
+                        $media = new stdClass();
+                        $media->media_fbid = $id;
+                        array_push($data->attached_media, $media);
+                    }
+                }
+            }
+
+            $data->attached_media = json_encode($data->attached_media);
+            $curl = curl_init();
+            $url = self::FB_ROOT . "/feed?published=true&access_token=" . self::FB_TOKEN;
+
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_HTTPHEADER => array(
+                    "access_token: " . self::FB_TOKEN
+                ),
+            ));
+            CURL_SETOPT($curl, CURLOPT_POSTFIELDS, $data);
+
+            $response = curl_exec($curl);
+
+            curl_close($curl);
+
+            $id = isset(json_decode($response)->id) ? json_decode($response)->id : -1;
+
+            return $id;
+        } catch (Exception $e) {
+            return -1;
+        }
+    }
+
+    public static function addCommentToFacebookPost(string $post_id, string $comment)
+    {
+        try {
+            $data = new stdClass();
+            $data->message = "$comment";
+            $curl = curl_init();
+            $url = "https://graph.facebook.com/v13.0/$post_id/comments?access_token=" . self::FB_TOKEN;
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_HTTPHEADER => array(
+                    "access_token: " . self::FB_TOKEN
+                ),
+            ));
+            CURL_SETOPT($curl, CURLOPT_POSTFIELDS, $data);
+
+            $response = curl_exec($curl);
+
+            curl_close($curl);
+
+            return $response;
+        } catch (Exception $th) {
+        }
+    }
+
+    public static function deleteFacebookPost(string $post_id)
+    {
+        try {
+            $curl = curl_init();
+            $url = self::FB_ROOT . "/$post_id?access_token=" . self::FB_TOKEN;
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'DELETE',
+                CURLOPT_HTTPHEADER => array(
+                    "access_token: " . self::FB_TOKEN
+                ),
+            ));
+
+            $response = curl_exec($curl);
+
+            curl_close($curl);
+
+            return $response;
+        } catch (Exception $th) {
+        }
+    }
+
+    public static function addFacebookPost(string $post_id, int $id, bool $is_store = true): bool
+    {
+        if ($is_store) {
+            return Db::getInstance()->insert("sd_facebook", [
+                "id_sd_store" => $id,
+                "post_id" => $post_id
+            ]);
+        } else {
+            return Db::getInstance()->insert("sd_facebook", [
+                "id_product" => $id,
+                "post_id" => $post_id
+            ]);
+        }
+    }
+
+    public function getFacebookPostId(int $id, bool $is_store = true)
+    {
+        $q = new DbQuery();
+        $q->select("post_id")->from("sd_facebook");
+
+        if($is_store){
+            $q->where("id_sd_store = $id");
+        }else{
+            $q->where("id_product = $id");
+        }
+        $result = Db::getInstance()->executeS($q, true)->fetch();
+        if($result && !empty($result)){
+            return $result["post_id"];
+        }
+        return null;
+    }
+
+    public function deleteFacebookPostId(int $id, bool $is_store = true)
+    {
+        if ($is_store) {
+            return Db::getInstance()->delete("sd_facebook", "id_sd_store = $id");
+        } else {
+            return Db::getInstance()->delete("sd_facebook", "id_product = $id");
+        }
     }
 }
