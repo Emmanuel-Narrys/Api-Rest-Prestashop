@@ -59,6 +59,12 @@ class Api_RestStoreModuleFrontController extends RestController
                     'default' => 0,
                     "data" => TypeStore::getTypeStores($id_lang)
                 ],
+                [
+                    "name" => "page",
+                    "required" => false,
+                    "type" => "number",
+                    'default' => 1,
+                ]
             ]
         ];
 
@@ -95,7 +101,7 @@ class Api_RestStoreModuleFrontController extends RestController
             }
         }
 
-        $this->datas['stores'] = Boutique::getFullStores($id_lang ?? null, null, true, $id_type_store);
+        list("pagination" => $this->datas['pagination'], "stores" => $this->datas['stores']) = Boutique::getFullStores($id_lang ?? null, null, false, $id_type_store, true);
         $this->renderAjax();
 
         parent::processGetRequest();

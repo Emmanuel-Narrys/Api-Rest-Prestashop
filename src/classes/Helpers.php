@@ -186,9 +186,9 @@ class Helpers
         return self::request("https://small-deals.com/wp-json/api/api_categories");
     }
 
-    public static function getOldCustomer()
+    public static function getOldCustomer(int $page = 1)
     {
-        return self::request("https://small-deals.com/wp-json/api/get_non_parrain_users");
+        return self::request("https://small-deals.com/wp-json/api/get_non_parrain_users?paged=$page");
     }
 
     public static function getOldStores(int $user_id)
