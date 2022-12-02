@@ -70,6 +70,17 @@ class APIRoutes
                     'module' => 'api_rest'
                 ]
             ],
+            'module-api_rest-categorystore' => [
+                'rule' => 'rest/categoriesstore{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[_a-zA-Z0-9_-]+', 'param' => 'id']
+                ],
+                'controller' => 'category_store',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
             'module-api_rest-share-product' => [
                 'rule' => 'rest/share-product{/:id}',
                 'keywords' => [
