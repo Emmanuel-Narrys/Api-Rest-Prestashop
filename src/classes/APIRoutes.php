@@ -37,6 +37,15 @@ class APIRoutes
                     'module' => 'api_rest'
                 ]
             ],
+            'module-api_rest-search-stores' => [
+                'rule' => 'rest/search/stores',
+                'keywords' => [],
+                'controller' => 'search_store',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
             'module-api_rest-product' => [
                 'rule' => 'rest/product{/:id}',
                 'keywords' => [
