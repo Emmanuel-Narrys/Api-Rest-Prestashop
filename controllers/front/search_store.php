@@ -88,7 +88,7 @@ class Api_RestSearch_storeModuleFrontController extends RestController
         $inputs = $this->checkErrorsRequiredOrType();
 
         $query = $inputs['query'];
-        $query = ($query && !is_null($query) && $query != "") ? $query : null;
+        $query = ($query && !is_null($query) && $query != "" && $query != " ") ? $query : null;
 
         $id_type_store = (int) $inputs['id_type_store'];
         $id_type_store = ($id_type_store && !is_null($id_type_store)) ? $id_type_store : null;
@@ -104,6 +104,12 @@ class Api_RestSearch_storeModuleFrontController extends RestController
 
         if ($schema && !is_null($schema)) {
             $this->datas = $this->params;
+            $this->renderAjax();
+        }
+
+        if(!$query && !$id_type_store && !$id_city && !$id_category_store && !$id_currency){
+            $this->datas["pagination"] = [];
+            $this->datas["stores"] = [];
             $this->renderAjax();
         }
 
