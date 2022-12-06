@@ -15,6 +15,7 @@ use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchProviderInterface;
 use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchQuery;
 use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchResult;
 use PrestaShop\PrestaShop\Core\Product\Search\SortOrder;
+use PrestaShop\PrestaShop\Core\Product\Search\Pagination;
 use ProductListingFrontController;
 
 abstract class RestProductListingController extends ProductListingFrontController
@@ -361,27 +362,6 @@ abstract class RestProductListingController extends ProductListingFrontControlle
             $result->setCurrentSortOrder($query->getSortOrder());
         }
 
-        /* $id_manufacturer = (int)Tools::getValue('id_manufacturer', false);
-        $id_year = (int)Tools::getValue('id_year', false);
-        $id_model = (int)Tools::getValue('id_model', false);
-        $id_category = (int)Tools::getValue('id_category');
-
-        if ($id_manufacturer != false && $id_year != false && $id_model != false) {
-            $sql = 'SELECT p.id_product FROM ' . _DB_PREFIX_ . 'product p 
-        INNER JOIN ' . _DB_PREFIX_ . 'product_year py ON (py.id_product = p.id_product) 
-        INNER JOIN ' . _DB_PREFIX_ . 'model_product mp ON (mp.id_product = p.id_product) 
-        WHERE p.id_category_default = ' . $id_category . ' AND p.id_manufacturer = ' . $id_manufacturer . ' AND py.id_year = ' . $id_year . ' AND mp.id_model = ' . $id_model . '';
-
-            $result->setProducts(Db::getInstance()->executeS($sql));
-
-            $sql = 'SELECT COUNT(p.id_product) FROM ' . _DB_PREFIX_ . 'product p 
-        INNER JOIN ' . _DB_PREFIX_ . 'product_year py ON (py.id_product = p.id_product) 
-        INNER JOIN ' . _DB_PREFIX_ . 'model_product mp ON (mp.id_product = p.id_product) 
-        WHERE p.id_category_default = ' . $id_category . ' AND p.id_manufacturer = ' . $id_manufacturer . ' AND py.id_year = ' . $id_year . ' AND mp.id_model = ' . $id_model . '';
-
-            $result->setTotalProductsCount((int)DB::getInstance()->getValue($sql));
-        } */
-
         // prepare the products
         $products = $result->getProducts();
         // with the core
@@ -391,26 +371,6 @@ abstract class RestProductListingController extends ProductListingFrontControlle
         $rendered_active_filters = $this->renderActiveFilters(
             $result
         );
-        // render the facets
-        /* if ($provider instanceof FacetsRendererInterface) {
-            // with the provider if it wants to
-            $rendered_facets = $provider->renderFacets(
-                $context,
-                $result
-            );
-            $rendered_active_filters = $provider->renderActiveFilters(
-                $context,
-                $result
-            );
-        } else {
-            // with the core
-            $rendered_facets = $this->renderFacets(
-                $result
-            );
-            $rendered_active_filters = $this->renderActiveFilters(
-                $result
-            );
-        } */
 
         $pagination = $this->getTemplateVarPagination(
             $query,
@@ -457,6 +417,70 @@ abstract class RestProductListingController extends ProductListingFrontControlle
         Hook::exec('actionProductSearchAfter', $searchVariables);
 
         return $searchVariables;
+    }
+
+    /**
+     * Pagination is HARD. We let the core do the heavy lifting from
+     * a simple representation of the pagination.
+     *
+     * Generated URLs will include the page number, obviously,
+     * but also the sort order and the "q" (facets) parameters.
+     *
+     * @param ProductSearchQuery $query
+     * @param ProductSearchResult $result
+     *
+     * @return array An array that makes rendering the pagination very easy
+     */
+    protected function getTemplateVarPagination(
+        ProductSearchQuery $query,
+        ProductSearchResult $result
+    ) {
+        $pagination = new Pagination();
+        $pagination
+            ->setPage($query->getPage())
+            ->setPagesCount(
+                (int) ceil($result->getTotalProductsCount() / $query->getResultsPerPage())
+            );
+
+        $totalItems = $result->getTotalProductsCount();
+        $itemsShownFrom = ($query->getResultsPerPage() * ($query->getPage() - 1)) + 1;
+        $itemsShownTo = $query->getResultsPerPage() * $query->getPage();
+
+        $pages = array_map(function ($link) {
+            $link['url'] = $this->updateQueryString([
+                'page' => $link['page'] > 1 ? $link['page'] : null,
+            ]);
+
+            return $link;
+        }, $pagination->buildLinks());
+
+        //Filter next/previous link on first/last page
+        $pages = array_filter($pages, function ($page) use ($pagination) {
+            if ('previous' === $page['type'] && 1 === $pagination->getPage()) {
+                return false;
+            }
+            if ('next' === $page['type'] && $pagination->getPagesCount() === $pagination->getPage()) {
+                return false;
+            }
+
+            return true;
+        });
+
+        $new_pages = [];
+        foreach ($pages as $page) {
+            $new_pages[] = $page;
+        }
+
+        return [
+            'total_items' => $totalItems,
+            'items_shown_from' => $itemsShownFrom,
+            'items_shown_to' => ($itemsShownTo <= $totalItems) ? $itemsShownTo : $totalItems,
+            'current_page' => $pagination->getPage(),
+            'pages_count' => $pagination->getPagesCount(),
+            'pages' => $new_pages,
+            // Compare to 3 because there are the next and previous links
+            'should_be_displayed' => (count($pagination->buildLinks()) > 3),
+        ];
     }
 
     private function getProductSearchProviderFromModules($query)
@@ -577,7 +601,7 @@ abstract class RestProductListingController extends ProductListingFrontControlle
             'clear_all_link' => $this->updateQueryString(['q' => null, 'page' => null]),
         ];
     }
-    
+
     /**
      * Renders an array of facets.
      *
@@ -615,5 +639,4 @@ abstract class RestProductListingController extends ProductListingFrontControlle
             'clear_all_link' => $this->updateQueryString(['q' => null, 'page' => null]),
         ];
     }
-
 }

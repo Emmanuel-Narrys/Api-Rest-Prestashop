@@ -42,7 +42,7 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
     protected $category;
 
     protected $quantity_discounts = [];
-    
+
     protected $search_string;
     protected $search_tag;
 
@@ -123,6 +123,7 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
 
         $variables = $this->getProductSearchVariables();
         $productList = $variables['products'];
+        
         $retriever = new ImageRetriever(
             $this->context->link
         );
@@ -132,13 +133,13 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
         foreach ($productList as $key => $product) {
             $populated_product = (new ProductAssembler($this->context))
                 ->assembleProduct($product);
-                
-            if($id_sd_store){
+
+            if ($id_sd_store) {
                 $productStore = ProductStore::getProductStore((int)$product['id_product'], $id_sd_store);
-                if(!Validate::isLoadedObject($productStore)){
+                if (!Validate::isLoadedObject($productStore)) {
                     $productStore = null;
                 }
-            }else{
+            } else {
                 $productStore = null;
             }
 
@@ -149,7 +150,7 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
                 new PriceFormatter(),
                 $retriever,
                 $this->context->getTranslator(),
-                $productStore 
+                $productStore
             );
 
             $productList[$key] = $lazy_product->getProduct();
