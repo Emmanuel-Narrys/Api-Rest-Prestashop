@@ -307,6 +307,15 @@ class APIRoutes
                     'module' => 'api_rest'
                 ]
             ],
+            'module-api_rest-product-search-front-office' => [
+                'rule' => 'rest/front-office/product-search',
+                'keywords' => [],
+                'controller' => 'adminproduct_search',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
             'module-api_rest-reset-password' => [
                 'rule' => 'rest/reset-password',
                 'keywords' => [],

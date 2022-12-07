@@ -20,17 +20,7 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
                 'name' => 'id',
                 'required' => false,
                 'type' => 'text'
-            ],
-            [
-                'name' => 's',
-                'required' => false,
-                'type' => 'text'
-            ],
-            [
-                'name' => 'tag',
-                'required' => false,
-                'type' => 'text'
-            ],
+            ]
         ]
     ];
 
@@ -62,17 +52,7 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
                     'required' => false,
                     'type' => 'number',
                     'default' => 0
-                ],
-                [
-                    'name' => 's',
-                    'required' => false,
-                    'type' => 'text'
-                ],
-                [
-                    'name' => 'tag',
-                    'required' => false,
-                    'type' => 'text'
-                ],
+                ]
             ]
         ];
 
@@ -85,8 +65,6 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
         $inputs = $this->checkErrorsRequiredOrType();
         $id_category = $inputs['id'];
         $id_sd_store = $inputs['id_sd_store'];
-        $this->search_string = $inputs['s'];
-        $this->search_tag = $inputs['tag'];
 
         if ((int) $id_category) {
             $id_category = (int) $id_category;
@@ -117,13 +95,14 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
             $id_shop = null,
             $chain = true
         );
+        
         if (!empty($filteredCategory['object'])) {
             $categoryVar = $filteredCategory['object'];
         }
 
         $variables = $this->getProductSearchVariables();
         $productList = $variables['products'];
-        
+
         $retriever = new ImageRetriever(
             $this->context->link
         );
@@ -177,21 +156,6 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
             'category' => $categoryVar,
             'subcategories' => $this->getTemplateVarSubCategories(),
         ], $variables);
-
-        /* $this->datas['category'] = [
-            'description' => $this->category->description,
-            'active' => $this->category->active,
-            'images' => $this->getImage(
-                $this->category,
-                $this->category->id_image
-            ),
-            'label' => $variables['label'],
-            'products' => $productList,
-            'sort_orders' => $variables['sort_orders'],
-            'sort_selected' => $variables['sort_selected'],
-            'pagination' => $variables['pagination'],
-            'facets' => $facets
-        ]; */
 
         $this->renderAjax();
         parent::processGetRequest();

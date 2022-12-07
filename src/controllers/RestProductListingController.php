@@ -285,7 +285,7 @@ abstract class RestProductListingController extends ProductListingFrontControlle
 
         // the search provider will need a context (language, shop...) to do its job
         $context = $this->getProductSearchContext();
-
+        
         // the controller generates the query...
         if (Tools::getValue('s')) {
             $query = $this->getProductSearchQuery();

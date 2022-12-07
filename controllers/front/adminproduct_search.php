@@ -6,7 +6,7 @@ use PrestaShop\PrestaShop\Adapter\Entity\Product;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 
-class Api_RestProductsearchModuleFrontController extends RestProductListingController
+class Api_RestAdminproduct_searchModuleFrontController extends RestProductListingController
 {
 
     public $params = [
@@ -39,7 +39,6 @@ class Api_RestProductsearchModuleFrontController extends RestProductListingContr
         $inputs = $this->checkErrorsRequiredOrType();
         $this->search_string = $inputs['s'];
         $this->search_tag = $inputs['tag'];
-        $_GET["search_front"] = true;
 
         $variables = $this->getProductSearchVariables();
         $productList = $variables['products'];

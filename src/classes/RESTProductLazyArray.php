@@ -91,7 +91,7 @@ class RESTProductLazyArray
         $this->productStore = $productStore;
 
         $exist = $this->addStore();
-        if ($exist) {
+        /* if ($exist) {
             $this->fillImages(
                 $product,
                 $language
@@ -111,7 +111,26 @@ class RESTProductLazyArray
             $this->getFlags();
 
             $this->addDateAgo();
-        }
+        } */
+        $this->fillImages(
+            $product,
+            $language
+        );
+
+        $this->addPriceInformation(
+            $settings,
+            $product
+        );
+
+        $this->addQuantityInformation(
+            $settings,
+            $product,
+            $language
+        );
+
+        $this->getFlags();
+
+        $this->addDateAgo();
     }
 
     protected function addPriceInformation(
@@ -506,7 +525,7 @@ class RESTProductLazyArray
                 $this->product['active'] = $this->productStore->active;
                 $this->product['show_price'] = $this->productStore->show_price;
             } else {
-                $this->product = [];
+                /* $this->product = []; */
                 return false;
             }
         }
