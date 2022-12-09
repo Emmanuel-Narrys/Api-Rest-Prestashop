@@ -123,7 +123,7 @@ class Api_RestRegisterModuleFrontController extends RestController
             }
 
             $email = Helpers::getEmailByUsername($inputs["username"]);
-            if ($email == false) {
+            if ($email != false) {
                 $this->renderAjaxErrors(
                     $this->getTranslator()->trans("This username exists.")
                 );
