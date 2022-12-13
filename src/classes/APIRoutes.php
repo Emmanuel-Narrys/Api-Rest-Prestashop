@@ -352,6 +352,61 @@ class APIRoutes
                     'module' => 'api_rest'
                 ]
             ],
+            'module-api_rest-wishlist' => [
+                'rule' => 'rest/front-office/wishlists{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[0-9]+', 'param' => 'id']
+                ],
+                'controller' => 'wishlist',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-wishlist-update' => [
+                'rule' => 'rest/front-office/wishlists/update{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[0-9]+', 'param' => 'id']
+                ],
+                'controller' => 'wishlist_update',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-wishlist-delete' => [
+                'rule' => 'rest/front-office/wishlists/delete{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[0-9]+', 'param' => 'id']
+                ],
+                'controller' => 'wishlist_delete',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-wishlist-add-product' => [
+                'rule' => 'rest/front-office/wishlists/product/add{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[0-9]+', 'param' => 'id']
+                ],
+                'controller' => 'wishlist_add_product',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
+            'module-api_rest-wishlist-remove-product' => [
+                'rule' => 'rest/front-office/wishlists/product/remove{/:id}',
+                'keywords' => [
+                    'id' => ['regexp' => '[0-9]+', 'param' => 'id']
+                ],
+                'controller' => 'wishlist_remove_product',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
         ];
     }
 }
