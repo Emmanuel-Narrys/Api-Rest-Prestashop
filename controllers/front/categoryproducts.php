@@ -74,7 +74,7 @@ class Api_RestCategoryproductsModuleFrontController extends RestProductListingCo
         }
         $_GET['id_category'] = $id_category;
 
-        $this->category = new Category($id_category, true, $this->context->language->id);
+        $this->category = new Category($id_category, $this->context->language->id);
         if (!Validate::isLoadedObject($this->category)) {
             $this->renderAjaxErrors($this->trans('This category is no longer available.', [], 'Shop.Notifications.Error'));
         }
