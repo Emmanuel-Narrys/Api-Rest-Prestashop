@@ -531,6 +531,11 @@ class RESTProductLazyArray
         }
         $store = Boutique::getStore((int) $this->product['id_sd_store'], $id_lang);
         $this->product['store'] = $store;
+        $this->product["stores"] = Boutique::getStoresSameProduct(
+            (int)$this->product['id_product'],
+            (int) $this->product['id_sd_store'],
+            $id_lang
+        );
         return true;
     }
 

@@ -301,7 +301,7 @@ class Api_RestCustomerModuleFrontController extends AuthRestController
         //Create or Update Address Customer
         $id_address = (int) Address::getFirstCustomerAddressId($customer->id);
         $address = new Address($id_address, $id_lang);
-        if (!$id_address && !Validate::isLoadedObject($address)) {
+        if (!$id_address || !Validate::isLoadedObject($address)) {
             $address->id_customer = $customer->id;
             $address->id_country = (int) $inputs['id_country'];
             $address->id_state = (int) $inputs['id_state'];

@@ -68,7 +68,7 @@ class Api_RestProductModuleFrontController extends RestController
         }
 
         $this->product = new Product($id_product, true, $this->context->language->id);
-        if (!Validate::isLoadedObject($this->product)) {
+        if (!Validate::isLoadedObject($this->product) || empty(ProductStore::getProductStores($this->product->id))) {
             $this->renderAjaxErrors($this->trans('This product is no longer available.', [], 'Shop.Notifications.Error'));
         }
 

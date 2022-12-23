@@ -173,7 +173,7 @@ class RestController extends ModuleFrontController
         ], $this->codeMethod, false));
         die;
     }
-    
+
     /**
      * Undocumented function
      *
@@ -235,7 +235,7 @@ class RestController extends ModuleFrontController
             //Get Value
             $value = Tools::getValue($name);
 
-            if($type == 'array'){
+            if ($type == 'array') {
                 $value = json_decode($value) ? json_decode($value) : ($value == false || $value == null ? [] : $value);
             }
 
@@ -311,7 +311,7 @@ class RestController extends ModuleFrontController
             }
 
             $extension = ($value && !empty($value)) ? pathinfo($value['name'], PATHINFO_EXTENSION) : "";
-            if(!in_array($extension, $extensions) && ($required === true) && ($value && !empty($value))){
+            if (!in_array($extension, $extensions) && ($required === true) && ($value && !empty($value))) {
                 $this->errors['extensions'][] = $a;
             }
 
@@ -363,7 +363,7 @@ class RestController extends ModuleFrontController
             $value = $_FILES;
             $new_value = [];
             foreach ($value as $key => $v) {
-                if($key == 'cover'){
+                if ($key == 'cover') {
                     continue;
                 }
                 $new_value[$key] = $v;
@@ -385,10 +385,10 @@ class RestController extends ModuleFrontController
                 $value = isset($a["default"]) ? $a["default"] : [];
             }
 
-            if($value && !empty($value)){
-                foreach($value as $key => $v){
+            if ($value && !empty($value)) {
+                foreach ($value as $key => $v) {
                     $extension = pathinfo($v['name'], PATHINFO_EXTENSION);
-                    if(!in_array($extension, $extensions) && ($required === true) && ($v && !empty($v))){
+                    if (!in_array($extension, $extensions) && ($required === true) && ($v && !empty($v))) {
                         $this->errors['extensions'][] = $a;
                     }
                 }
@@ -702,12 +702,13 @@ class RestController extends ModuleFrontController
         return $product;
     }
 
-    public function getFullProduct(int $id_product, int $id_lang = null, ProductStore $productStore = null){
+    public function getFullProduct(int $id_product, int $id_lang = null, ProductStore $productStore = null)
+    {
 
         $this->product = new Product($id_product, true, $id_lang);
 
         $product = $this->getTemplateVarProduct($productStore);
-        if(empty($product)){
+        if (empty($product)) {
             return $product;
         }
 
@@ -735,6 +736,19 @@ class RestController extends ModuleFrontController
 
             $product['accessories'][$key] = $lazy_product->getProduct();
         }
+
+        $populated_product = (new ProductAssembler($this->context))
+            ->assembleProduct($product);
+        $lazy_product = new RESTProductLazyArray(
+            $settings,
+            $populated_product,
+            $this->context->language,
+            new PriceFormatter(),
+            $retriever,
+            $this->context->getTranslator(),
+            $productStore
+        );
+        $product = $lazy_product->getProduct();
 
         return $product;
     }
@@ -1686,5 +1700,4 @@ class RestController extends ModuleFrontController
         $rout_category  = Category::getRootCategory($this->context->language->id);
         return $this->getTemplateVarSubCategories($rout_category);
     }
-
 }
