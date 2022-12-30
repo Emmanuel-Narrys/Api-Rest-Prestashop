@@ -19,6 +19,12 @@ class Api_RestWishlistModuleFrontController extends AuthRestController
                 'required' => false,
                 'default' => 0
             ],
+            [
+                'name' => 'all_products',
+                'type' => 'number',
+                'required' => false,
+                'default' => 0
+            ],
         ]
     ];
 
@@ -33,6 +39,7 @@ class Api_RestWishlistModuleFrontController extends AuthRestController
 
         $inputs = $this->checkErrorsRequiredOrType();
         $id_wishlist = (int) $inputs["id"];
+        $all_products = (bool) $inputs["all_products"];
 
         if ($id_wishlist) {
             $wishlist = new WishList($id_wishlist, $id_lang);
@@ -41,7 +48,7 @@ class Api_RestWishlistModuleFrontController extends AuthRestController
             }
             $this->datas["wishlist"] = $wishlist;
             $products_wishlist = WishList::getProductsByWishlist($wishlist->id);
-            $products_wishlist = $products_wishlist == false ? [] : $products_wishlist;
+            $products_wishlist ?? [];
             $products = [];
             foreach ($products_wishlist as $product) {
                 $_GET['id_product_attribute'] = (int) $product["id_product_attribute"];
@@ -51,21 +58,32 @@ class Api_RestWishlistModuleFrontController extends AuthRestController
             $this->renderAjax();
         }
 
-        $wishlists = WishList::getAllWishListsByIdCustomer($customer->id);
-        if (empty($wishlists)) {
-            $wishlist = new WishList();
-            $wishlist->id_shop = $this->context->shop->id;
-            $wishlist->id_shop_group = $this->context->shop->id_shop_group;
-            $wishlist->id_customer = $customer->id;
-            $wishlist->name = Configuration::get('blockwishlist_WishlistDefaultTitle', $id_lang);
-            $wishlist->token = $this->generateWishListToken();
-            $wishlist->default = 1;
-            $wishlist->add();
-
+        if ($all_products) {
+            $_products = WishList::getAllProductByCustomer($customer->id, $this->context->shop->id);
+            $_products ?? [];
+            $products = [];
+            foreach ($_products as $product) {
+                $_GET['id_product_attribute'] = (int) $product["id_product_attribute"];
+                $products[] = $this->getFullProduct((int) $product["id_product"], $id_lang);
+            }
+            $this->datas["products"] = $products;
+        } else {
             $wishlists = WishList::getAllWishListsByIdCustomer($customer->id);
-        }
+            if (empty($wishlists)) {
+                $wishlist = new WishList();
+                $wishlist->id_shop = $this->context->shop->id;
+                $wishlist->id_shop_group = $this->context->shop->id_shop_group;
+                $wishlist->id_customer = $customer->id;
+                $wishlist->name = Configuration::get('blockwishlist_WishlistDefaultTitle', $id_lang);
+                $wishlist->token = $this->generateWishListToken();
+                $wishlist->default = 1;
+                $wishlist->add();
 
-        $this->datas["wishlists"] = $wishlists;
+                $wishlists = WishList::getAllWishListsByIdCustomer($customer->id);
+            }
+
+            $this->datas["wishlists"] = $wishlists;
+        }
         $this->renderAjax();
 
         parent::processGetRequest();
@@ -105,7 +123,7 @@ class Api_RestWishlistModuleFrontController extends AuthRestController
         $wishlist->id_customer = $customer->id;
         $wishlist->id_shop = $this->context->shop->id;
         $wishlist->token = $this->generateWishListToken();
-        if(!$wishlist->save()){
+        if (!$wishlist->save()) {
             $this->renderAjaxErrors($this->trans("Wishlist can't be created."));
         }
 

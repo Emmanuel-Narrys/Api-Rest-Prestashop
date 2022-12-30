@@ -29,6 +29,7 @@ use PrestaShop\PrestaShop\Core\Product\ProductPresentationSettings;
 use Symfony\Component\Translation\TranslatorInterface;
 use Viaziza\Smalldeals\Classes\Boutique;
 use Viaziza\Smalldeals\Classes\ProductStore;
+use WishList;
 
 class RESTProductLazyArray
 {
@@ -512,23 +513,18 @@ class RESTProductLazyArray
     public function addStore()
     {
         $id_lang = Context::getContext()->language->id;
-        if ($this->productStore) {
-            $this->product['id_sd_store'] = $this->productStore->id_sd_store;
-            $this->product['quantity'] = $this->productStore->quantity;
-            $this->product['active'] = $this->productStore->active;
-            $this->product['show_price'] = $this->productStore->show_price;
-        } else {
+        if (!$this->productStore) {
             $this->productStore = ProductStore::getProductStoreWithMinPrice((int)$this->product['id_product'], $id_lang);
-            if ($this->productStore) {
-                $this->product['id_sd_store'] = $this->productStore->id_sd_store;
-                $this->product['quantity'] = $this->productStore->quantity;
-                $this->product['active'] = $this->productStore->active;
-                $this->product['show_price'] = $this->productStore->show_price;
-            } else {
-                /* $this->product = []; */
+            if (!$this->productStore) {
                 return false;
             }
         }
+
+        $this->product['id_sd_store'] = $this->productStore->id_sd_store;
+        $this->product['quantity'] = $this->productStore->quantity;
+        $this->product['active'] = $this->productStore->active;
+        $this->product['show_price'] = $this->productStore->show_price;
+
         $store = Boutique::getStore((int) $this->product['id_sd_store'], $id_lang);
         $this->product['store'] = $store;
         $this->product["stores"] = Boutique::getStoresSameProduct(
@@ -561,5 +557,8 @@ class RESTProductLazyArray
             }
         }
         $this->product['date_ago'] = $ago;
+    }
+
+    public function getWishlist(){
     }
 }
