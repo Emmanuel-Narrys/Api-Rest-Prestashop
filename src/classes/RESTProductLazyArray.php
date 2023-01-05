@@ -27,6 +27,7 @@ use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Core\Domain\Product\Stock\ValueObject\OutOfStockType;
 use PrestaShop\PrestaShop\Core\Product\ProductPresentationSettings;
 use Symfony\Component\Translation\TranslatorInterface;
+use Validate;
 use Viaziza\Smalldeals\Classes\Boutique;
 use Viaziza\Smalldeals\Classes\ProductStore;
 use WishList;
@@ -73,6 +74,11 @@ class RESTProductLazyArray
      */
     private $productStore;
 
+    /**
+     * @var Context
+     */
+    private $context;
+
     public function __construct(
         ProductPresentationSettings $settings,
         array $product,
@@ -90,6 +96,7 @@ class RESTProductLazyArray
         $this->translator = $translator;
         $this->hookManager = new HookManager();
         $this->productStore = $productStore;
+        $this->context = Context::getContext();
 
         $exist = $this->addStore();
         /* if ($exist) {
@@ -132,6 +139,8 @@ class RESTProductLazyArray
         $this->getFlags();
 
         $this->addDateAgo();
+
+        $this->getWishlist();
     }
 
     protected function addPriceInformation(
@@ -559,6 +568,24 @@ class RESTProductLazyArray
         $this->product['date_ago'] = $ago;
     }
 
-    public function getWishlist(){
+    public function getWishlist()
+    {
+        $customer = $this->context->customer;
+        if ($customer && Validate::isLoadedObject($customer) && $customer->isLogged()) {
+            $products = WishList::getAllProductByCustomer($customer->id, $this->context->shop->id);
+            $id_wishlist = null;
+            if ($products) {
+                array_map(function ($prod) use (&$id_wishlist) {
+                    if (((int)$this->product["id_product"] == (int)$prod["id_product"]) &&
+                        ((int)$this->product["id_product_attribute"] == (int) $prod["id_product_attribute"])
+                    ) {
+                        $id_wishlist = (int) $prod["id_wishlist"];
+                    }
+                }, $products);
+            }
+            $this->product["id_wishlist"] = $id_wishlist;
+        } else {
+            $this->product["id_wishlist"] = null;
+        }
     }
 }
