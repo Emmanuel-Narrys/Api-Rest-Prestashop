@@ -98,28 +98,8 @@ class RESTProductLazyArray
         $this->productStore = $productStore;
         $this->context = Context::getContext();
 
-        $exist = $this->addStore();
-        /* if ($exist) {
-            $this->fillImages(
-                $product,
-                $language
-            );
+        $this->addStore();
 
-            $this->addPriceInformation(
-                $settings,
-                $product
-            );
-
-            $this->addQuantityInformation(
-                $settings,
-                $product,
-                $language
-            );
-
-            $this->getFlags();
-
-            $this->addDateAgo();
-        } */
         $this->fillImages(
             $product,
             $language
@@ -207,7 +187,7 @@ class RESTProductLazyArray
         }
 
         //Get prices with all currencies
-        $currencies = Currency::getCurrencies(true, true);
+        $currencies = Currency::getCurrencies(true, true, true);
         foreach ($currencies as $currency) {
             $amount = $currency->conversion_rate * $price;
             $this->product['price_currencies'][] = (object) [
@@ -524,7 +504,7 @@ class RESTProductLazyArray
         $id_lang = Context::getContext()->language->id;
         if (!$this->productStore) {
             $this->productStore = ProductStore::getProductStoreWithMinPrice((int)$this->product['id_product'], $id_lang);
-            if (!$this->productStore) {
+            if (!$this->productStore && !Validate::isLoadedObject($this->productStore)) {
                 return false;
             }
         }
