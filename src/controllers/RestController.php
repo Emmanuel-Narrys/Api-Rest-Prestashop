@@ -737,7 +737,7 @@ class RestController extends ModuleFrontController
             $product['accessories'][$key] = $lazy_product->getProduct();
         }
 
-        $populated_product = (new ProductAssembler($this->context))
+        /* $populated_product = (new ProductAssembler($this->context))
             ->assembleProduct($product);
         $lazy_product = new RESTProductLazyArray(
             $settings,
@@ -748,7 +748,7 @@ class RestController extends ModuleFrontController
             $this->context->getTranslator(),
             $productStore
         );
-        $product = $lazy_product->getProduct();
+        $product = $lazy_product->getProduct(); */
 
         return $product;
     }
@@ -1118,12 +1118,6 @@ class RestController extends ModuleFrontController
             $productStore
         );
         return $lazy_product->getProduct();
-
-        /* return $presenter->present(
-            $productSettings,
-            $product_full,
-            $this->context->language
-        ); */
     }
 
 
