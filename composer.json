@@ -8,7 +8,6 @@
             "email": "emmanuelnarrys@gmail.com"
         }
     ],
-    "require": {},
     "autoload": {
         "psr-4": {
             "NarrysTech\\Api_Rest\\" : "src/"

@@ -157,7 +157,7 @@ class Helpers
             ));
 
             $response = curl_exec($ch);
-
+            var_dump($response);die;
             if (curl_errno($ch)) {
                 echo curl_error($ch);
                 die();
@@ -235,17 +235,19 @@ class Helpers
 
     public static function refreshTokenGoogleApi(string $refresh_token)
     {
-        $url = "https://oauth2.googleapis.com/token?";
+        /* $url = "https://oauth2.googleapis.com/token?"; */
+        $url = "https://accounts.google.com/o/oauth2/token";
         $client_id = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_ID");
         $client_secret = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_SECRET");
         $grant_type = "refresh_token";
 
-        $new_url = $url . "refresh_token=$refresh_token";
-        $new_url .= "&grant_type=$grant_type";
-        $new_url .= "&client_id=$client_id";
-        $new_url .= "&client_secret=$client_secret";
-
-        return self::request($new_url);
+        $params = [
+            "grant_type" => $grant_type,
+            "client_id" => $client_id,
+            "client_secret" => $client_secret,
+            "refresh_token" => $refresh_token,
+        ];
+        return self::request($url, true,$params);
     }
 
     public static function uploadMovieGoogleApi(string $token)

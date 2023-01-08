@@ -407,6 +407,15 @@ class APIRoutes
                     'module' => 'api_rest'
                 ]
             ],
+            'module-api_rest-youtube' => [
+                'rule' => 'rest/youtube',
+                'keywords' => [],
+                'controller' => 'youtube',
+                'params' => [
+                    'fc' => 'module',
+                    'module' => 'api_rest'
+                ]
+            ],
         ];
     }
 }
