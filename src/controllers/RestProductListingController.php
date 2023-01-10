@@ -76,6 +76,9 @@ abstract class RestProductListingController extends ProductListingFrontControlle
      */
     public $codeAuthenticateCustomer = 402;
 
+    protected $search_string;
+    protected $search_tag;
+
     public function init()
     {
         header("Content-type: application/json");
@@ -285,10 +288,11 @@ abstract class RestProductListingController extends ProductListingFrontControlle
 
         // the search provider will need a context (language, shop...) to do its job
         $context = $this->getProductSearchContext();
-        
+
         // the controller generates the query...
         if (Tools::getValue('s')) {
             $query = $this->getProductSearchQuery();
+            $query->setIdCategory(Tools::getValue('id_category'));
         } else {
             $query = new ProductSearchQuery();
             $query

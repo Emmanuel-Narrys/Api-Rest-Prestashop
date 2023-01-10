@@ -556,9 +556,8 @@ class RESTProductLazyArray
             $id_wishlist = null;
             if ($products) {
                 array_map(function ($prod) use (&$id_wishlist) {
-                    if (((int)$this->product["id_product"] == (int)$prod["id_product"]) &&
-                        ((int)$this->product["id_product_attribute"] == (int) $prod["id_product_attribute"])
-                    ) {
+                    if (((int)$this->product["id_product"] == (int)$prod["id_product"]) /* &&
+                        ((int)$this->product["id_product_attribute"] == (int) $prod["id_product_attribute"]) */) {
                         $id_wishlist = (int) $prod["id_wishlist"];
                     }
                 }, $products);
