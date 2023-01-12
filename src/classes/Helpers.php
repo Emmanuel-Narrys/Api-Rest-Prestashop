@@ -198,7 +198,8 @@ class Helpers
 
     public static function setClientGoogleApi(string $redirect_uri)
     {
-        $url = "https://accounts.google.com/o/oauth2/v2/auth?";
+        $url = "https://accounts.google.com/o/oauth2/auth";
+        /* $url = "https://accounts.google.com/o/oauth2/v2/auth?"; */
         $scope = urlencode("https://www.googleapis.com/auth/youtube.upload");
         $client_id = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_ID");
         $response_type = "code";
@@ -211,26 +212,29 @@ class Helpers
         $new_url .= "&redirect_uri=$redirect_uri";
         $new_url .= "&response_type=$response_type";
         $new_url .= "&client_id=$client_id";
-        $new_url .= "&include_granted_scopes=$include_granted_scopes";
+        /* $new_url .= "&include_granted_scopes=$include_granted_scopes"; */
 
         return $new_url;
     }
 
     public static function getTokenGoogleApi(string $redirect_uri, string $code)
     {
-        $url = "https://oauth2.googleapis.com/token?";
+        /* $url = "https://oauth2.googleapis.com/token?"; */
+        $url = "https://accounts.google.com/o/oauth2/token";
         $client_id = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_ID");
         $client_secret = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_SECRET");
         $redirect_uri = urlencode($redirect_uri);
         $grant_type = "authorization_code";
 
-        $new_url = $url . "code=$code";
-        $new_url .= "&grant_type=$grant_type";
-        $new_url .= "&redirect_uri=$redirect_uri";
-        $new_url .= "&client_id=$client_id";
-        $new_url .= "&client_secret=$client_secret";
+        $params = [
+            "code" => $code,
+            "grant_type" => $grant_type,
+            "redirect_uri" => $redirect_uri,
+            "client_id" => $client_id,
+            "client_secret" => $client_secret,
+        ];
 
-        return self::request($new_url);
+        return self::request($url, true, $params);
     }
 
     public static function refreshTokenGoogleApi(string $refresh_token, string $access_token)
