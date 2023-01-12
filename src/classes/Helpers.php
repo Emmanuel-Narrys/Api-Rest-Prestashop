@@ -223,7 +223,6 @@ class Helpers
         /* $url = "https://accounts.google.com/o/oauth2/token"; */
         $client_id = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_ID");
         $client_secret = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_SECRET");
-        $redirect_uri = urlencode($redirect_uri);
         $grant_type = "authorization_code";
 
         $params = [
@@ -239,7 +238,7 @@ class Helpers
 
     public static function refreshTokenGoogleApi(string $refresh_token, string $access_token)
     {
-        $url = "https://oauth2.googleapis.com/token?";
+        $url = "https://oauth2.googleapis.com/token";
         /* $url = "https://accounts.google.com/o/oauth2/token"; */
         $client_id = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_ID");
         $client_secret = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_SECRET");
