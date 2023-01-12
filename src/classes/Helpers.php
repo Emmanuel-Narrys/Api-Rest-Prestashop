@@ -157,8 +157,7 @@ class Helpers
             ));
 
             $response = curl_exec($ch);
-            var_dump($response);
-            die;
+            
             if (curl_errno($ch)) {
                 echo curl_error($ch);
                 die();
