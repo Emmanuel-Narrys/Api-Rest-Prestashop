@@ -157,7 +157,8 @@ class Helpers
             ));
 
             $response = curl_exec($ch);
-            var_dump($response);die;
+            var_dump($response);
+            die;
             if (curl_errno($ch)) {
                 echo curl_error($ch);
                 die();
@@ -202,7 +203,7 @@ class Helpers
         $scope = urlencode("https://www.googleapis.com/auth/youtube.upload");
         $client_id = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_ID");
         $response_type = "code";
-        $access_type = "online";
+        $access_type = "offline";
         $include_granted_scopes = "true";
         $redirect_uri = urlencode($redirect_uri);
 
@@ -233,10 +234,10 @@ class Helpers
         return self::request($new_url);
     }
 
-    public static function refreshTokenGoogleApi(string $refresh_token)
+    public static function refreshTokenGoogleApi(string $refresh_token, string $access_token)
     {
-        /* $url = "https://oauth2.googleapis.com/token?"; */
-        $url = "https://accounts.google.com/o/oauth2/token";
+        $url = "https://oauth2.googleapis.com/token?";
+        /* $url = "https://accounts.google.com/o/oauth2/token"; */
         $client_id = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_ID");
         $client_secret = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_SECRET");
         $grant_type = "refresh_token";
@@ -247,7 +248,7 @@ class Helpers
             "client_secret" => $client_secret,
             "refresh_token" => $refresh_token,
         ];
-        return self::request($url, true,$params);
+        return self::request($url, true, $params, $access_token);
     }
 
     public static function uploadMovieGoogleApi(string $token)
@@ -424,13 +425,13 @@ class Helpers
         $q = new DbQuery();
         $q->select("post_id")->from("sd_facebook");
 
-        if($is_store){
+        if ($is_store) {
             $q->where("id_sd_store = $id");
-        }else{
+        } else {
             $q->where("id_product = $id");
         }
         $result = Db::getInstance()->executeS($q, true)->fetch();
-        if($result && !empty($result)){
+        if ($result && !empty($result)) {
             return $result["post_id"];
         }
         return null;
