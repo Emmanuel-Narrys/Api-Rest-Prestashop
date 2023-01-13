@@ -3,6 +3,7 @@
 namespace NarrysTech\Api_Rest\classes;
 
 use Configuration;
+use DateTime;
 use DbQuery;
 use Exception;
 use PrestaShop\PrestaShop\Adapter\Entity\Category;
@@ -157,7 +158,7 @@ class Helpers
             ));
 
             $response = curl_exec($ch);
-            
+
             if (curl_errno($ch)) {
                 echo curl_error($ch);
                 die();
@@ -236,21 +237,39 @@ class Helpers
         return self::request($url, true, $params);
     }
 
-    public static function refreshTokenGoogleApi(string $refresh_token, string $access_token)
+    public static function refreshTokenGoogleApi(): bool
     {
-        $url = "https://oauth2.googleapis.com/token";
-        /* $url = "https://accounts.google.com/o/oauth2/token"; */
-        $client_id = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_ID");
-        $client_secret = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_SECRET");
-        $grant_type = "refresh_token";
+        $auth = self::getGoogleAuth();
+        if (
+            $auth->access_token && !is_null($auth->access_token) && $auth->access_token != "" &&
+            $auth->refresh_token && !is_null($auth->refresh_token) && $auth->refresh_token != ""
+        ) {
+            $date = new DateTime($auth->date);
+            $now = new DateTime();
+            $diff = $now->diff($date);
+            if ($diff->h > 1) {
+                $url = "https://oauth2.googleapis.com/token";
+                /* $url = "https://accounts.google.com/o/oauth2/token"; */
+                $client_id = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_ID");
+                $client_secret = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_SECRET");
+                $grant_type = "refresh_token";
 
-        $params = [
-            "grant_type" => $grant_type,
-            "client_id" => $client_id,
-            "client_secret" => $client_secret,
-            "refresh_token" => $refresh_token,
-        ];
-        return self::request($url, true, $params, $access_token);
+                $params = [
+                    "grant_type" => $grant_type,
+                    "client_id" => $client_id,
+                    "client_secret" => $client_secret,
+                    "refresh_token" => $auth->refresh_token,
+                ];
+                $response = self::request($url, true, $params, $auth->access_token);
+                if ($response && !empty($response) && isset($response["access_token"])) {
+                    return self::setGoogleAuth($response["access_token"]);
+                }
+            } else {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static function uploadMovieGoogleApi(string $token)
@@ -446,5 +465,23 @@ class Helpers
         } else {
             return Db::getInstance()->delete("sd_facebook", "id_product = $id");
         }
+    }
+
+    public static function getGoogleAuth()
+    {
+        $data = [];
+        $data["access_token"] = Configuration::get("GOOGLE_API_ACCESS_TOKEN");
+        $data["refresh_token"] = Configuration::get("GOOGLE_API_REFRESH_TOKEN");
+        $data["date"] = Configuration::get("GOOGLE_API_DATE");
+        return (object) $data;
+    }
+
+    public static function setGoogleAuth(string $access_token, string $refresh_token = null): bool
+    {
+        $result = Configuration::updateValue("GOOGLE_API_ACCESS_TOKEN", $access_token);
+        $result &= Configuration::updateValue("GOOGLE_API_DATE", date("Y-m-d H-i-s"));
+        if ($refresh_token)
+            $result &= Configuration::updateValue("GOOGLE_API_REFRESH_TOKEN", $refresh_token);
+        return $result;
     }
 }
