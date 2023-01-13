@@ -479,10 +479,10 @@ class Helpers
     public static function setGoogleAuth(string $access_token, string $refresh_token = null): bool
     {
         $result = Configuration::updateValue("GOOGLE_API_ACCESS_TOKEN", $access_token);
-        $result &= Configuration::updateValue("GOOGLE_API_DATE", date("Y-m-d H-i-s"));
-        if ($refresh_token){
+        $result &= Configuration::updateValue("GOOGLE_API_DATE", date("Y-m-d H:i:s"));
+        if ($refresh_token !== null) {
             $result &= Configuration::updateValue("GOOGLE_API_REFRESH_TOKEN", $refresh_token);
-        }else{
+        } else if ($refresh_token === "") {
             $result &= Configuration::updateValue("GOOGLE_API_REFRESH_TOKEN", "");
         }
         return $result;
