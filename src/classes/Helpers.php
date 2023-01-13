@@ -480,8 +480,11 @@ class Helpers
     {
         $result = Configuration::updateValue("GOOGLE_API_ACCESS_TOKEN", $access_token);
         $result &= Configuration::updateValue("GOOGLE_API_DATE", date("Y-m-d H-i-s"));
-        if ($refresh_token)
+        if ($refresh_token){
             $result &= Configuration::updateValue("GOOGLE_API_REFRESH_TOKEN", $refresh_token);
+        }else{
+            $result &= Configuration::updateValue("GOOGLE_API_REFRESH_TOKEN", "");
+        }
         return $result;
     }
 }
