@@ -353,6 +353,14 @@ class Api_RestAdminstoreModuleFrontController extends AuthRestController
             $this->renderAjaxErrors($this->trans("Image has not been saved."));
         }
 
+        $video = $inputs['video'];
+        $video_extension = pathinfo($video['name'], PATHINFO_EXTENSION);
+        $video_filename = Boutique::getPathImage(false) . DIRECTORY_SEPARATOR . $store->id . '.jpg';
+        $result = move_uploaded_file($video['tmp_name'], $video_filename);
+        if (!$result) {
+            $this->renderAjaxErrors($this->trans("Image has not been saved."));
+        }
+
         $this->datas['message'] = $this->trans("The store has been saved.");
         $this->datas['stores'] = Boutique::getFullStores($id_lang, $customer->id, false);
 

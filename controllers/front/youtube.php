@@ -13,10 +13,6 @@ class Api_RestYoutubeModuleFrontController extends RestController
      */
     protected function processGetRequest()
     {
-
-        $response = Helpers::refreshTokenGoogleApi("", "");
-        $this->datas["response"] = $response;
-
         $this->renderAjax();
 
         parent::processGetRequest();

@@ -50,21 +50,25 @@ class Api_RestProductModuleFrontController extends RestController
             $this->renderAjax();
         }
 
+
+        $_GET['id_product_attribute'] = 0;
         $inputs = $this->checkErrorsRequiredOrType();
         $id_product = $inputs['id'];
         $id_sd_store = $inputs['id_sd_store'];
 
-        if ((int) $id_product) {
+        $product_explode = explode('-', $id_product);
+        if (count($product_explode) == 1) {
             $id_product = (int) $id_product;
         } else {
-            $product_explode = explode('-', $id_product);
             $id_product = (int) $product_explode[0];
-            if ((int) $product_explode[1]) {
-                $id_product_attribute = (int) $product_explode[1];
+            if (count($product_explode) == 2) {
+                $id = $product_explode[1];
+                if ((int) $id) {
+                    $_GET['id_product_attribute'] = (int) $id;
+                }
             } else {
-                $id_product_attribute = 0;
+                $_GET['id_product_attribute'] = (int) $product_explode[1];
             }
-            $_GET['id_product_attribute'] = $id_product_attribute;
         }
 
         $this->product = new Product($id_product, true, $this->context->language->id);

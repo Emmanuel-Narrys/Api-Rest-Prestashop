@@ -141,8 +141,13 @@ class Helpers
     }
 
 
-    public static function request(string $url, bool $post = false, array $body = [], string  $authorization = null)
-    {
+    public static function request(
+        string $url,
+        bool $post = false,
+        array $body = [],
+        string  $authorization = null,
+        string $content_type = "application/json"
+    ) {
         $ch = curl_init();
         try {
             curl_setopt($ch, CURLOPT_URL, $url);
@@ -153,7 +158,7 @@ class Helpers
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                'Content-Type: application/json',
+                'Content-Type: ' . $content_type,
                 'Authorization: ' . ($authorization ? 'Bearer ' . $authorization : '')
             ));
 
@@ -272,18 +277,17 @@ class Helpers
         return false;
     }
 
-    public static function uploadMovieGoogleApi(string $token)
+    public static function uploadMovieGoogleApi(array $params)
     {
-        $url = "POST https://www.googleapis.com/upload/youtube/v3/videos?";
-        $client_id = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_ID");
-        $client_secret = Configuration::get("SMALLDEALS_OAUTH2_CLIENT_SECRET");
-        $grant_type = "refresh_token";
+        $url = "https://www.googleapis.com/upload/youtube/v3/videos?";
 
-        $new_url = $url . "grant_type=$grant_type";
-        $new_url .= "&client_id=$client_id";
-        $new_url .= "&client_secret=$client_secret";
+        if (!self::refreshTokenGoogleApi()) {
+            return false;
+        }
 
-        return self::request($new_url, true, [], $token);
+        $auth = self::getGoogleAuth();
+
+        return self::request($url, true, $params, $auth->access_token, "video/mp4");
     }
 
     public static function uploadImageToFacebook(string $url_image)

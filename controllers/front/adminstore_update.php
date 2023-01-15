@@ -1,5 +1,6 @@
 <?php
 
+use NarrysTech\Api_Rest\classes\Helpers;
 use NarrysTech\Api_Rest\controllers\AuthRestController;
 use Viaziza\Smalldeals\Classes\AddressStore;
 use Viaziza\Smalldeals\Classes\Boutique;
@@ -318,6 +319,52 @@ class Api_RestAdminstore_updateModuleFrontController extends AuthRestController
                 $this->renderAjaxErrors($this->trans("Image has not been update."));
             }
         }
+
+        $video = $inputs['video'];
+        $video_extension = pathinfo($video['name'], PATHINFO_EXTENSION);
+        $video_filename = Boutique::getPathVideo() . DIRECTORY_SEPARATOR . $store->id . '.'.$video_extension;
+        if (/* (int) $video["size"] > 274877906944 */true) {
+            if (file_exists($video_filename)) {
+                unlink($video_filename);
+            }
+            $result = move_uploaded_file($video['tmp_name'], $video_filename);
+            var_dump($result);die;
+            $params = array(
+                'fileDetails' => [
+                    'fileName' => $store->link_rewrite,
+                    'fileSize' => $video["size"],
+                    'fileType' => 'video',
+                    'container' => $store->name
+                ],
+                'snippet' => [
+                    'title' => $store->name,
+                    'description' => $store->description,
+                    'defaultLanguage' => $this->context->language->iso_code,
+                    'thumbnails' => [
+                        'default' => [
+                            'url' => $this->context->link->getBoutiqueLogoLink($store->id)
+                        ],
+                        'standard' => [
+                            'url' => $this->context->link->getBoutiqueImageLink($store->id)
+                        ],
+                    ]
+                ],
+                'data' => file_get_contents($video["tmp_name"]),
+                'mimeType' => 'video/*',
+                'uploadType' => 'multipart'
+            );
+            $reponse = Helpers::uploadMovieGoogleApi($params);
+            var_dump($reponse);
+            die;
+        } else if ($video["error"]) {
+            $this->renderAjaxErrors($this->trans("Une erreure est survenu lors du chargement de la vidéo."));
+        } else {
+            $this->renderAjaxErrors($this->trans("La taille maximale du fichier est de 274877906944 Bytes."));
+        }
+        if (!$result) {
+            $this->renderAjaxErrors($this->trans("Image has not been saved."));
+        }
+        die;
 
         $this->datas['message'] = $this->trans("The store has been update.");
         $this->datas['store'] = Boutique::getStore($store->id, $id_lang, false);
