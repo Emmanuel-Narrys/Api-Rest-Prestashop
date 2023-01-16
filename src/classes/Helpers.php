@@ -146,13 +146,19 @@ class Helpers
         bool $post = false,
         array $body = [],
         string  $authorization = null,
-        string $content_type = "application/json"
+        string $content_type = "application/json",
+        bool $delete = false
     ) {
         $ch = curl_init();
         try {
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_POST, $post);
-            if ($post) {
+
+            if ($delete) {
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+            }
+
+            if ($post || $delete) {
                 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
             }
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -287,7 +293,7 @@ class Helpers
 
         $auth = self::getGoogleAuth();
 
-        return self::request($url, true, $params, $auth->access_token, "video/mp4");
+        return self::request($url, true, $params, $auth->access_token, "video/*");
     }
 
     public static function uploadImageToFacebook(string $url_image)

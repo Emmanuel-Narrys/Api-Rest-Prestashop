@@ -1,5 +1,6 @@
 <?php
 
+use NarrysTech\Api_Rest\classes\Helpers;
 use NarrysTech\Api_Rest\controllers\AuthRestController;
 use Viaziza\Smalldeals\Classes\AddressStore;
 use Viaziza\Smalldeals\Classes\Boutique;
@@ -354,11 +355,49 @@ class Api_RestAdminstoreModuleFrontController extends AuthRestController
         }
 
         $video = $inputs['video'];
-        $video_extension = pathinfo($video['name'], PATHINFO_EXTENSION);
-        $video_filename = Boutique::getPathImage(false) . DIRECTORY_SEPARATOR . $store->id . '.jpg';
-        $result = move_uploaded_file($video['tmp_name'], $video_filename);
-        if (!$result) {
-            $this->renderAjaxErrors($this->trans("Image has not been saved."));
+        if (!empty($video)) {
+            $video_extension = pathinfo($video['name'], PATHINFO_EXTENSION);
+            $video_filename = Boutique::getPathVideo() . DIRECTORY_SEPARATOR . $store->id . '.' . $video_extension;
+            if ((int) $video["size"] < 274877906944) {
+                if (file_exists($video_filename)) {
+                    unlink($video_filename);
+                }
+                $result = move_uploaded_file($video['tmp_name'], $video_filename);
+                $params = array(
+                    'part' => '',
+                    'postBody' => [
+                        'snippet' => [
+                            'title' => $store->name,
+                            'description' => $store->description,
+                            'categoryId' => 22,
+                            'thumbnails' => [
+                                'default' => [
+                                    'url' => $this->context->link->getBoutiqueLogoLink($store->id)
+                                ],
+                                'standard' => [
+                                    'url' => $this->context->link->getBoutiqueImageLink($store->id)
+                                ],
+                            ]
+                        ]
+                    ],
+                    'data' => file_get_contents($video_filename),
+                    'mimeType' => 'application/octet-stream',
+                    'uploadType' => 'multipart',
+                );
+                $reponse = Helpers::uploadMovieGoogleApi($params);
+                if (file_exists($video_filename)) {
+                    unlink($video_filename);
+                }
+                var_dump($reponse);
+                die;
+            } else if ($video["error"]) {
+                $this->renderAjaxErrors($this->trans("Une erreure est survenu lors du chargement de la vidéo."));
+            } else {
+                $this->renderAjaxErrors($this->trans("La taille maximale du fichier est de 274877906944 Bytes."));
+            }
+            if (!$result) {
+                $this->renderAjaxErrors($this->trans("Image has not been saved."));
+            }
         }
 
         $this->datas['message'] = $this->trans("The store has been saved.");
