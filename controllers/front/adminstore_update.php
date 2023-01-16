@@ -336,14 +336,6 @@ class Api_RestAdminstore_updateModuleFrontController extends AuthRestController
                             'title' => $store->name,
                             'description' => $store->description,
                             'categoryId' => 22,
-                            'thumbnails' => [
-                                'default' => [
-                                    'url' => $this->context->link->getBoutiqueLogoLink($store->id)
-                                ],
-                                'standard' => [
-                                    'url' => $this->context->link->getBoutiqueImageLink($store->id)
-                                ],
-                            ]
                         ]
                     ],
                     'data' => file_get_contents($video_filename),
